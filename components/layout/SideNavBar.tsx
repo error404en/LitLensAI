@@ -16,10 +16,10 @@ export function SideNavBar() {
       </div>
 
       {/* CTA */}
-      <button className="w-full bg-primary text-on-primary font-label-md text-label-md py-2.5 rounded-DEFAULT mb-8 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer">
+      <Link href="/dashboard/upload" className="w-full bg-primary text-on-primary font-label-md text-label-md py-2.5 rounded-DEFAULT mb-8 hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
         <span className="material-symbols-outlined text-[18px]">upload_file</span>
         Upload Paper
-      </button>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1">
