@@ -32,14 +32,14 @@ export function RecentLibrary() {
   ];
 
   return (
-    <div className="md:col-span-12 space-y-4">
-      <div className="flex justify-between items-end">
-        <h3 className="font-headline-md text-headline-md">Recent Library</h3>
-        <a className="text-primary font-label-sm text-label-sm hover:underline flex items-center gap-1 cursor-pointer" href="#">
-          View All <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+    <div className="lg:col-span-12 space-y-6 pt-4">
+      <div className="flex justify-between items-center border-b border-outline-variant pb-4">
+        <h3 className="text-xl font-semibold text-on-surface">Recent Library</h3>
+        <a className="text-primary text-sm font-medium hover:underline flex items-center gap-1 cursor-pointer transition-colors" href="#">
+          View All <span className="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-1">arrow_forward</span>
         </a>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {mockPapers.map(paper => (
           <PaperCard 
             key={paper.id}

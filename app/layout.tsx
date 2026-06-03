@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
-import { SideNavBar } from "@/components/layout/SideNavBar";
-import { TopNavBar } from "@/components/layout/TopNavBar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,7 +15,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "LitLens AI - Dashboard",
+  title: "LitLens AI - Research Assistant",
   description: "Precision Literature Survey",
 };
 
@@ -27,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark scroll-smooth">
       <head>
         <link 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
@@ -40,15 +38,9 @@ export default function RootLayout({
         `}</style>
       </head>
       <body
-        className={`${inter.variable} ${geist.variable} bg-background text-on-surface font-body-md text-body-md antialiased overflow-hidden flex h-screen`}
+        className={`${inter.variable} ${geist.variable} bg-background text-on-surface font-body-md text-body-md antialiased overflow-x-hidden min-h-screen`}
       >
-        <SideNavBar />
-        <TopNavBar />
-        
-        {/* Main Content Canvas */}
-        <main className="flex-1 ml-0 md:ml-64 mt-[60px] h-[calc(100vh-60px)] overflow-y-auto custom-scrollbar">
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );

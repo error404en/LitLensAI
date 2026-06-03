@@ -22,35 +22,36 @@ export function PaperCard({
   const isComplete = status === 'complete';
 
   return (
-    <div className="bg-surface-container-low border border-outline-variant rounded-lg p-4 card-hover flex flex-col h-full">
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-label-sm font-label-sm text-on-surface-variant">
+    <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 card-hover flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-300">
+      <div className="flex justify-between items-start mb-3">
+        <span className="text-xs font-medium text-on-surface-variant bg-surface-variant px-2.5 py-1 rounded-md">
           {source} • {year}
         </span>
         {isComplete ? (
-          <span className="material-symbols-outlined text-tertiary text-[16px] tooltip" title="AI Analysis Complete">
+          <span className="material-symbols-outlined text-emerald-500 text-[18px] tooltip" title="AI Analysis Complete">
             check_circle
           </span>
         ) : (
-          <span className="material-symbols-outlined text-outline text-[16px] animate-pulse tooltip" title="Processing...">
+          <span className="material-symbols-outlined text-amber-500 text-[18px] animate-spin-slow tooltip" title="Processing...">
             sync
           </span>
         )}
       </div>
-      <h4 className="font-body-md text-body-md font-medium mb-1 line-clamp-2 flex-1">
+      
+      <h4 className="text-base font-semibold mb-2 line-clamp-2 flex-1 text-on-surface leading-snug hover:text-primary transition-colors cursor-pointer">
         {title}
       </h4>
-      <p className="font-body-sm text-body-sm text-on-surface-variant mb-4">
+      <p className="text-sm text-on-surface-variant mb-5 line-clamp-1">
         {authors}
       </p>
       
-      <div className={`border-t border-outline-variant pt-3 flex justify-between items-center ${!isComplete ? 'opacity-50' : ''}`}>
-        <span className="text-label-sm font-label-sm text-on-surface-variant bg-surface px-2 py-0.5 rounded">
-          {isComplete && matchScore ? `${matchScore} Match` : 'Processing'}
+      <div className={`border-t border-outline-variant pt-4 flex justify-between items-center ${!isComplete ? 'opacity-70' : ''}`}>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${isComplete ? 'bg-primary/10 text-primary' : 'bg-surface-variant text-on-surface-variant'}`}>
+          {isComplete && matchScore ? `${matchScore} Match` : 'Processing...'}
         </span>
         {isComplete && (
           <button 
-            className="text-primary font-label-sm text-label-sm hover:underline cursor-pointer"
+            className="text-primary text-sm font-medium hover:underline hover:text-primary-container cursor-pointer transition-colors"
             onClick={onReadSummary}
           >
             Read Summary

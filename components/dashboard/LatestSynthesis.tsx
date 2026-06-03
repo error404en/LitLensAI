@@ -9,25 +9,25 @@ export interface LatestSynthesisProps {
 
 export function LatestSynthesis({ title, snippet, tags, timeAgo }: LatestSynthesisProps) {
   return (
-    <div className="md:col-span-8 bg-surface-container-low border border-outline-variant border-l-2 border-l-primary rounded-lg p-6 space-y-4 card-hover">
+    <div className="lg:col-span-8 bg-surface-container-low border border-outline-variant border-l-4 border-l-primary rounded-xl p-6 md:p-8 space-y-5 card-hover shadow-sm">
       <div className="flex justify-between items-start">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
           <span className="material-symbols-outlined text-primary text-[18px]">summarize</span>
-          <span className="font-label-md text-label-md text-primary uppercase tracking-wider">Latest AI Synthesis</span>
+          <span className="text-xs font-semibold text-primary uppercase tracking-wider">Latest AI Synthesis</span>
         </div>
-        <span className="text-label-sm font-label-sm text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded border border-outline-variant">
+        <span className="text-xs font-medium text-on-surface-variant bg-surface-variant px-3 py-1 rounded-full border border-outline-variant">
           {timeAgo}
         </span>
       </div>
-      <div>
-        <h3 className="font-headline-md text-headline-md mb-2">{title}</h3>
-        <p className="font-body-md text-body-md text-on-surface-variant line-clamp-3">
+      <div className="space-y-3">
+        <h3 className="text-xl md:text-2xl font-semibold leading-tight text-on-surface">{title}</h3>
+        <p className="text-base text-on-surface-variant leading-relaxed line-clamp-3">
           {snippet}
         </p>
       </div>
-      <div className="flex gap-2 pt-2">
+      <div className="flex flex-wrap gap-2 pt-3">
         {tags.map((tag, idx) => (
-          <span key={idx} className="text-label-sm font-label-sm px-2 py-1 bg-primary-container/10 text-primary border border-primary/20 rounded">
+          <span key={idx} className="text-xs font-medium px-3 py-1 bg-surface-variant text-on-surface-variant border border-outline-variant rounded-md">
             {tag}
           </span>
         ))}
