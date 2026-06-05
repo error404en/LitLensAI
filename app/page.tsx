@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-primary/30">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0A0A0A] text-white selection:bg-primary/30">
       {/* Navigation */}
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
