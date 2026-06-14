@@ -4,23 +4,26 @@
 LitLens AI is an AI-powered literature survey assistant. It is a student MVP project optimized for learning and demonstrating modern software engineering practices. 
 
 ## Technology Stack
-- **Frontend**: Next.js, TypeScript, Tailwind CSS
-- **Backend**: FastAPI (Python)
-- **Database**: PostgreSQL (Relational) + ChromaDB (Vector)
+- **Frontend/Backend**: Next.js 15 (App Router), TypeScript, Tailwind CSS
+- **Database**: PostgreSQL (Supabase) + Qdrant (Vector DB)
 - **Authentication**: Clerk
-- **AI**: OpenAI API
+- **AI**: OpenAI API (orchestrated via LangChain)
+- **Background Jobs**: Inngest
 
 ## Project Structure
-- `/frontend`: Next.js application.
-- `/backend` *(to be created)*: FastAPI application.
-- `/docs` *(to be organized)*: Project documentation (PRD, TRD, Schema, etc.).
+- `/app`: Next.js frontend pages and backend API routes.
+- `/components`: UI and feature components.
+- `/lib`: Utility functions, database configuration, and AI orchestration.
+- `/docs`: Project documentation.
 
 ## Current State
-- The documentation has been generated and aligned with the target stack.
-- The Next.js frontend has been minimally initialized.
-- The FastAPI backend, PostgreSQL schema, ChromaDB, and Clerk integration are pending implementation.
+- The documentation is fully aligned with the unified Next.js + Supabase + Qdrant stack.
+- The Next.js frontend layout, dashboard structure, and Clerk authentication are fully integrated.
+- MVP UI routes for projects, literature reviews, and comparisons are implemented with mock data.
+- The Supabase client and schema types are set up.
+- The backend PDF processing pipeline (Inngest) and semantic search (Qdrant) are pending implementation.
 
 ## Developer Guidelines
 - **Simplicity**: Avoid unnecessary complexity. Keep solutions realistic for an MVP.
-- **Modularity**: Maintain a clean separation between the frontend UI and the backend AI/processing logic.
-- **Security**: Rely on Clerk for auth; do not roll custom authentication logic. Protect FastAPI routes using Clerk's JWT validation.
+- **Modularity**: Maintain a clean separation between the frontend UI and backend AI/processing logic (e.g., encapsulating logic in `lib/ai`).
+- **Security**: Rely on Clerk for authentication. Protect API routes using Clerk middleware. Enforce Supabase Row Level Security (RLS) for data integrity.

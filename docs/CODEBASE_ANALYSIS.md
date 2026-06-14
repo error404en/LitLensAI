@@ -2,8 +2,13 @@
 
 ## 1. Existing Routes
 - `/` (`app/page.tsx`): Main marketing/landing page.
+- `/sign-in/[[...sign-in]]/page.tsx`: Clerk authentication sign-in.
+- `/sign-up/[[...sign-up]]/page.tsx`: Clerk authentication sign-up.
 - `/dashboard` (`app/dashboard/page.tsx`): Dashboard overview containing the hero command, latest synthesis, and library grid.
 - `/dashboard/upload` (`app/dashboard/upload/page.tsx`): Dedicated interface for paper uploads.
+- `/dashboard/projects/[projectId]` (`app/dashboard/projects/[projectId]/page.tsx`): Project workspace overview.
+- `/dashboard/projects/[projectId]/compare` (`app/dashboard/projects/[projectId]/compare/page.tsx`): Comparison engine interface.
+- `/dashboard/projects/[projectId]/review` (`app/dashboard/projects/[projectId]/review/page.tsx`): Literature review generator workspace.
 
 ## 2. Existing Components
 Organized into three functional categories:
@@ -12,8 +17,9 @@ Organized into three functional categories:
 - **Library (`components/library/`)**: `PaperCard.tsx`.
 
 ## 3. Existing Layouts
-- `app/layout.tsx`: Root layout, setting up global typography (`Inter` and `Geist`), Google Material Symbols, background colors, and global CSS.
+- `app/layout.tsx`: Root layout, wrapped in `<ClerkProvider>`, setting up global typography (`Inter` and `Geist`), Google Material Symbols, background colors, and global CSS.
 - `app/dashboard/layout.tsx`: Dashboard-specific shell integrating the `SideNavBar` and `TopNavBar` with a custom-scrollable main content area.
+- `middleware.ts`: Secures `/dashboard(.*)` routes utilizing `clerkMiddleware`.
 
 ## 4. Existing Design System
 - Custom Tailwind CSS configuration utilizing v4 (`@tailwindcss/postcss`).
@@ -22,36 +28,22 @@ Organized into three functional categories:
 - Dark mode is hardcoded (`className="dark"` in `RootLayout`).
 - Material Symbols Outlined used heavily for iconography.
 
-## 5. Existing shadcn/ui Components
-- **None currently installed.**
-- Despite the implementation plan specifying `shadcn/ui`, the `components/ui` folder does not exist, nor are `lucide-react` or Radix primitives installed in `package.json`. The current components are built using raw custom Tailwind classes.
+## 5. Existing APIs & Infrastructure
+- **Supabase**: Client configured in `lib/supabase/client.ts` with strict typings in `lib/types/database.ts` tracking `projects` and `documents` schema.
+- **Domain Types**: Centralized interfaces located in `lib/types.ts`.
 
-## 6. Reusable Patterns Already Present
-- **Utility Functions**: `lib/utils.ts` is present (likely containing the standard `cn` utility for `clsx` and `tailwind-merge` which are installed).
-- **Component Categorization**: UI components are logically separated by domain (`dashboard`, `layout`, `library`).
-- **Mock Data Injection**: The dashboard currently relies on mocked domain objects (e.g., `mockSynthesis` in `dashboard/page.tsx`) to render UI states.
-
-## 7. Missing Pages Required for MVP
-Based on the `IMPLEMENTATION.md` phases, the following core routes are missing:
-- **Authentication**:
-  - `/sign-in/[[...sign-in]]/page.tsx`
-  - `/sign-up/[[...sign-up]]/page.tsx`
-- **Project & Paper Management**:
-  - `/dashboard/projects/[projectId]/page.tsx`
-  - `/dashboard/projects/[projectId]/papers/[paperId]/page.tsx` (optional but recommended)
-- **AI Features & Synthesis Workspaces**:
-  - `/dashboard/projects/[projectId]/compare/page.tsx` (Comparison Engine)
-  - `/dashboard/projects/[projectId]/gaps/page.tsx` (Research Gap Analysis)
-  - `/dashboard/projects/[projectId]/review/page.tsx` (Literature Review Generator)
+## 6. Missing Infrastructure Required for MVP
+Based on the `IMPLEMENTATION.md` phases, the following backend routes and integrations are pending:
 - **Backend API Routes**:
-  - `/api/upload/route.ts`
-  - `/api/inngest/route.ts`
-  - `/api/search/route.ts`
+  - `/api/upload/route.ts` (Arcjet + Supabase Storage)
+  - `/api/inngest/route.ts` (LangChain Extraction & OpenAI calls)
+  - `/api/search/route.ts` (Qdrant Semantic Search)
+- **AI Core**:
+  - Implementation of LangChain utilities (`lib/ai/langchain.ts`, `lib/ai/prompts.ts`)
 
 ---
 
 ## Recommended Next Actions
 1. **Initialize shadcn/ui**: Run `npx shadcn@latest init` to formally set up the `components/ui` directory, update `tailwind.config`, and allow installation of pre-built accessible components.
-2. **Install Authentication**: Follow Phase 2 of the implementation plan to install `@clerk/nextjs` and configure the `/sign-in` and `/sign-up` routes.
-3. **Migrate Icons**: Consider replacing Google Material Symbols with `lucide-react` for better compatibility with shadcn/ui, or standardize the usage of Material Symbols.
-4. **Database Scaffolding**: Setup `supabase-js` and create the `/lib/db/supabase.ts` file to prepare for dynamic data replacing the current mock data.
+2. **Setup Inngest Client**: Install Inngest and define the event schemas for `paper/uploaded` triggering the asynchronous processing pipeline.
+3. **Configure Arcjet**: Protect the `/api/upload` endpoint from abuse by configuring arcjet rate-limiting policies.

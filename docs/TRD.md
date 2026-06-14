@@ -1,37 +1,40 @@
 # Technical Requirements Document (TRD)
 
 ## 1. System Architecture
-LitLens AI uses a decoupled client-server architecture. 
-- A **Next.js frontend** handles the user interface, file uploads, and displaying AI results.
-- A **FastAPI backend** manages API requests, orchestrates AI tasks (using OpenAI), and interfaces with databases.
-- **Clerk** handles authentication.
-- **PostgreSQL** stores relational data (users, projects, document metadata).
-- **ChromaDB** acts as the vector database for storing text chunk embeddings for RAG (Retrieval-Augmented Generation).
+LitLens AI uses a unified Next.js full-stack architecture leveraging Server Components and API Routes. 
+- **Next.js (App Router)** handles the user interface, routing, and backend API handlers.
+- **Inngest** manages background jobs and event-driven orchestration for processing long-running tasks like document chunking and AI summarization.
+- **Clerk** handles robust user authentication and session management.
+- **Supabase (PostgreSQL & Storage)** stores relational data (projects, documents, summaries) and securely hosts the uploaded PDF files.
+- **Qdrant** acts as the vector database for storing text chunk embeddings for RAG (Retrieval-Augmented Generation).
+- **LangChain** orchestrates LLM prompt chains and document parsing using the OpenAI API.
 
 ## 2. Technology Stack
-- **Frontend**: Next.js, TypeScript, Tailwind CSS
-- **Backend**: FastAPI (Python)
-- **Database**: PostgreSQL
-- **Vector Search**: ChromaDB
+- **Core Framework**: Next.js 15, TypeScript, Tailwind CSS
 - **Authentication**: Clerk
-- **AI/LLM**: OpenAI API
+- **Relational Database & Blob Storage**: Supabase
+- **Vector Search**: Qdrant
+- **Background Jobs**: Inngest
+- **AI/LLM Engine**: OpenAI API + LangChain
+- **Security**: Arcjet (for rate limiting and bot protection)
 
 ## 3. System Components
-### 3.1. Frontend (Next.js)
-- Implements Server Components and App Router for optimal performance.
-- Integrates `@clerk/nextjs` for secure authentication routes.
-- Tailwind CSS for responsive and modern UI styling.
+### 3.1. Frontend & API Routing (Next.js)
+- Implements React Server Components (RSC) for optimal performance and secure data fetching.
+- Integrates `@clerk/nextjs` middleware to protect `/dashboard` and API routes.
+- Exposes `/api/upload`, `/api/inngest`, and `/api/search` endpoints.
 
-### 3.2. Backend (FastAPI)
-- Exposes RESTful endpoints for document upload, processing, and AI generation.
-- Validates Clerk JWT tokens for protected routes.
-- Uses standard Python tools (e.g., `pypdf`, `langchain`) for PDF parsing and chunking.
+### 3.2. Background Worker Pipeline (Inngest + LangChain)
+- Intercepts `paper/uploaded` events to decouple heavy AI workloads from user-facing API routes.
+- Uses LangChain loaders (`PDFLoader`) and text splitters to securely parse Supabase-hosted PDFs.
+- Generates structured summaries (JSON format) using LLM chains and saves them to PostgreSQL.
 
 ### 3.3. Data Storage
-- **PostgreSQL**: Stores users, projects, and document references.
-- **ChromaDB**: Stores vector embeddings of document chunks to enable semantic search across papers.
+- **Supabase (PostgreSQL)**: Stores user references, project state, document statuses, and structured AI summaries.
+- **Qdrant**: Stores high-dimensional vector embeddings (`text-embedding-3-small`) of document chunks mapped with `paper_id` and `project_id` payload filters to enable highly targeted semantic search.
 
 ## 4. Security & Compliance
-- Passwords are not handled directly; Clerk manages all auth.
-- Backend validates Clerk session tokens via JWKS.
-- PDFs are temporarily stored or stored securely with presigned URLs.
+- **Authentication**: No passwords stored; Clerk handles all login and 2FA flows securely.
+- **Authorization**: Supabase Row Level Security (RLS) policies strictly isolate data by user ID.
+- **File Security**: PDFs are stored securely in Supabase Storage buckets with strict RLS policies prohibiting public access.
+- **API Protection**: Arcjet protects backend upload and AI endpoints from abuse or rate-limit exhaustion.
