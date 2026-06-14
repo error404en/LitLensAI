@@ -2,61 +2,68 @@ import * as React from "react"
 import { Paper } from "../../lib/types"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { PaperStatusBadge } from "./PaperStatusBadge"
-import { formatAuthors, formatDate, truncateText } from "../../lib/utils"
-import { Calendar, FileText, MoreVertical, Trash, Heart } from "lucide-react"
-import { Dropdown, DropdownItem } from "../ui/dropdown"
+import { formatAuthors, formatDate } from "../../lib/utils"
+import { Calendar, Heart } from "lucide-react"
+import { PaperTags } from "./PaperTags"
+import { PaperCardActions } from "./PaperCardActions"
 
 interface PaperCardProps {
   paper: Paper
   onDelete?: (id: string) => void
   onFavorite?: (id: string) => void
   onOpen?: (id: string) => void
+  onRename?: (id: string) => void
+  onCompare?: (id: string) => void
 }
 
-export function PaperCard({ paper, onDelete, onFavorite, onOpen }: PaperCardProps) {
-  const [dropdownOpen, setDropdownOpen] = React.useState(false)
+export function PaperCard({ paper, onDelete, onFavorite, onOpen, onRename, onCompare }: PaperCardProps) {
+  
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only open if they didn't click inside the actions menu
+    onOpen?.(paper.id)
+  }
 
   return (
-    <Card className="flex flex-col h-full hover:border-primary/50 transition-colors">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div className="flex flex-col space-y-1">
-          <PaperStatusBadge status={paper.status} />
+    <Card 
+      className="group flex flex-col h-full hover:border-primary/50 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+      onClick={handleCardClick}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpen?.(paper.id)
+        }
+      }}
+    >
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 gap-4">
+        <div className="flex flex-col space-y-2 flex-1 overflow-hidden">
+          <div className="flex items-center gap-2">
+            <PaperStatusBadge status={paper.status} />
+            {paper.isFavorite && (
+              <Heart className="h-4 w-4 fill-red-500 text-red-500 shrink-0" aria-label="Favorited" />
+            )}
+          </div>
           <h3 
-            className="font-semibold leading-tight mt-2 line-clamp-2 cursor-pointer hover:underline"
-            onClick={() => onOpen?.(paper.id)}
+            className="font-semibold leading-tight text-lg line-clamp-2 group-hover:text-primary transition-colors"
+            title={paper.title}
           >
             {paper.title}
           </h3>
         </div>
-        <Dropdown
-          isOpen={dropdownOpen}
-          onClose={() => setDropdownOpen(false)}
-          trigger={
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground text-muted-foreground"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
-          }
-        >
-          <DropdownItem onClick={() => { onOpen?.(paper.id); setDropdownOpen(false) }}>
-            <FileText className="mr-2 h-4 w-4" /> Open
-          </DropdownItem>
-          <DropdownItem onClick={() => { onFavorite?.(paper.id); setDropdownOpen(false) }}>
-            <Heart className="mr-2 h-4 w-4" /> Favorite
-          </DropdownItem>
-          <DropdownItem 
-            className="text-destructive focus:text-destructive" 
-            onClick={() => { onDelete?.(paper.id); setDropdownOpen(false) }}
-          >
-            <Trash className="mr-2 h-4 w-4" /> Delete
-          </DropdownItem>
-        </Dropdown>
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0 -mt-1 -mr-2">
+          <PaperCardActions 
+            paper={paper} 
+            onOpen={onOpen}
+            onFavorite={onFavorite}
+            onDelete={onDelete}
+            onRename={onRename}
+            onCompare={onCompare}
+          />
+        </div>
       </CardHeader>
       
       <CardContent className="flex-1 pb-4">
-        <div className="text-sm text-muted-foreground mb-4">
+        <div className="text-sm font-medium text-foreground mb-3 line-clamp-1" title={formatAuthors(paper.authors)}>
           {formatAuthors(paper.authors)}
         </div>
         <p className="text-sm text-muted-foreground line-clamp-3">
@@ -64,25 +71,17 @@ export function PaperCard({ paper, onDelete, onFavorite, onOpen }: PaperCardProp
         </p>
       </CardContent>
 
-      <CardFooter className="flex flex-col items-start gap-2 border-t pt-4 text-xs text-muted-foreground">
-        <div className="flex flex-wrap gap-1">
-          {paper.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="bg-secondary px-2 py-0.5 rounded-full text-[10px] font-medium">
-              {tag}
-            </span>
-          ))}
-          {paper.tags.length > 3 && (
-            <span className="bg-secondary px-2 py-0.5 rounded-full text-[10px] font-medium">
-              +{paper.tags.length - 3}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center justify-between w-full mt-2">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {paper.year}
+      <CardFooter className="flex flex-col items-start gap-4 border-t pt-4 text-xs text-muted-foreground">
+        <PaperTags tags={paper.tags} maxTags={3} />
+        
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2" title={`Journal: ${paper.journal || 'Unknown'}`}>
+            <Calendar className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate max-w-[120px]">{paper.journal || 'Unknown Journal'} • {paper.year}</span>
           </div>
-          <div>{formatDate(paper.uploadedAt)}</div>
+          <div title={`Uploaded: ${formatDate(paper.uploadedAt)}`}>
+            {formatDate(paper.uploadedAt)}
+          </div>
         </div>
       </CardFooter>
     </Card>

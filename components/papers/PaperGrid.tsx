@@ -4,18 +4,25 @@ import { PaperCard } from "./PaperCard"
 
 interface PaperGridProps {
   papers: readonly Paper[]
+  onDelete?: (id: string) => void
+  onFavorite?: (id: string) => void
+  onOpen?: (id: string) => void
+  onRename?: (id: string) => void
+  onCompare?: (id: string) => void
 }
 
-export function PaperGrid({ papers }: PaperGridProps) {
+export function PaperGrid({ papers, onDelete, onFavorite, onOpen, onRename, onCompare }: PaperGridProps) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {papers.map((paper) => (
         <PaperCard
           key={paper.id}
           paper={paper}
-          onOpen={(id) => console.log("Open", id)}
-          onDelete={(id) => console.log("Delete", id)}
-          onFavorite={(id) => console.log("Favorite", id)}
+          onOpen={onOpen}
+          onDelete={onDelete}
+          onFavorite={onFavorite}
+          onRename={onRename}
+          onCompare={onCompare}
         />
       ))}
     </div>

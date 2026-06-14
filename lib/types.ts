@@ -34,6 +34,7 @@ export interface Paper {
   readonly fileSize?: number;
   readonly mimeType?: string;
   readonly uploadedAt: string;
+  readonly isFavorite?: boolean;
   readonly embeddingCreated?: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;

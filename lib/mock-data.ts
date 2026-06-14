@@ -21,6 +21,31 @@ export const MOCK_PROJECTS: readonly Project[] = [
   },
 ];
 
+// Helper to generate some dummy papers to test pagination
+const generateDummyPapers = (count: number): Paper[] => {
+  return Array.from({ length: count }).map((_, i) => ({
+    id: `paper_dummy_${i}`,
+    projectId: i % 2 === 0 ? "proj_1" : "proj_2",
+    userId: "user_123",
+    title: `Simulated Research Study on AI Capabilities ${i + 1}`,
+    authors: [{ name: `Researcher ${i}A` }, { name: `Researcher ${i}B` }],
+    abstract: `This is an automatically generated abstract for paper ${i}. It explores various themes in machine learning and data science, focusing on scalability and robust evaluation metrics in real-world environments.`,
+    year: 2020 + (i % 5),
+    journal: `Journal of Machine Learning Research ${i}`,
+    tags: ["Simulation", "AI", "Testing"],
+    status: i % 4 === 0 ? "completed" : i % 5 === 0 ? "failed" : "processing",
+    fileUrl: `https://example.com/paper_${i}.pdf`,
+    fileName: `simulated_paper_${i}.pdf`,
+    fileSize: 1048576 + i * 1000,
+    mimeType: "application/pdf",
+    uploadedAt: new Date(Date.now() - i * 86400000).toISOString(), // i days ago
+    embeddingCreated: i % 2 === 0,
+    isFavorite: i % 7 === 0,
+    createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - i * 86400000).toISOString(),
+  }));
+};
+
 export const MOCK_PAPERS: readonly Paper[] = [
   {
     id: "paper_1",
@@ -49,6 +74,7 @@ export const MOCK_PAPERS: readonly Paper[] = [
     mimeType: "application/pdf",
     uploadedAt: "2023-10-02T10:00:00Z",
     embeddingCreated: true,
+    isFavorite: true,
     createdAt: "2023-10-02T10:00:00Z",
     updatedAt: "2023-10-02T10:05:00Z",
   },
@@ -79,6 +105,7 @@ export const MOCK_PAPERS: readonly Paper[] = [
     mimeType: "application/pdf",
     uploadedAt: "2023-10-05T14:30:00Z",
     embeddingCreated: true,
+    isFavorite: false,
     createdAt: "2023-10-05T14:30:00Z",
     updatedAt: "2023-10-05T14:45:00Z",
   },
@@ -108,6 +135,7 @@ export const MOCK_PAPERS: readonly Paper[] = [
     mimeType: "application/pdf",
     uploadedAt: "2023-11-06T09:15:00Z",
     embeddingCreated: true,
+    isFavorite: true,
     createdAt: "2023-11-06T09:15:00Z",
     updatedAt: "2023-11-06T09:20:00Z",
   },
@@ -132,6 +160,7 @@ export const MOCK_PAPERS: readonly Paper[] = [
     mimeType: "application/pdf",
     uploadedAt: "2023-10-10T11:00:00Z",
     embeddingCreated: true,
+    isFavorite: false,
     createdAt: "2023-10-10T11:00:00Z",
     updatedAt: "2023-10-10T11:05:00Z",
   },
@@ -156,7 +185,9 @@ export const MOCK_PAPERS: readonly Paper[] = [
     mimeType: "application/pdf",
     uploadedAt: "2023-11-10T15:00:00Z",
     embeddingCreated: false,
+    isFavorite: false,
     createdAt: "2023-11-10T15:00:00Z",
     updatedAt: "2023-11-10T15:00:00Z",
   },
+  ...generateDummyPapers(25),
 ];
