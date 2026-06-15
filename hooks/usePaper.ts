@@ -1,6 +1,7 @@
-import { useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { PapersService } from "../services/papers.service"
+import { Paper } from "../lib/types"
 import { usePaperStore } from "../stores/paper.store"
-import { getPaperById } from "../lib/api"
 
 export function usePaper(paperId: string | null) {
   const store = usePaperStore()
@@ -14,7 +15,7 @@ export function usePaper(paperId: string | null) {
     store.setLoading(true)
     store.setError(null)
     try {
-      const data = await getPaperById(paperId)
+      const data = await PapersService.getPaper(paperId)
       if (data) {
         // Update the specific paper in the store if we have it, else we might just want to store it as selected
         store.setSelectedPaperId(data.id)

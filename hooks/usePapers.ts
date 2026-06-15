@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { usePaperStore } from "../stores/paper.store"
-import { getPapers } from "../lib/api"
+import { PapersService } from "../services/papers.service"
 
 const ITEMS_PER_PAGE = 12
 
@@ -11,7 +11,7 @@ export function usePapers(projectId?: string) {
     store.setLoading(true)
     store.setError(null)
     try {
-      const data = await getPapers(projectId)
+      const data = await PapersService.getPapers(projectId)
       store.setPapers(data)
     } catch (err) {
       store.setError(err instanceof Error ? err.message : "Failed to fetch papers")

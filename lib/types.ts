@@ -46,8 +46,27 @@ export interface Project {
   readonly title: string;
   readonly description?: string;
   readonly status: ProjectStatus;
+  readonly isFavorite?: boolean;
+  readonly stats?: ProjectStats;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+export interface ProjectStats {
+  readonly paperCount: number;
+  readonly completionPercentage: number;
+  readonly aiStatus: "idle" | "processing" | "ready";
+  readonly activityCount: number;
+}
+
+export type ActivityType = "project_created" | "paper_added" | "paper_removed" | "summary_generated" | "review_generated" | "chat_started";
+
+export interface ProjectActivity {
+  readonly id: string;
+  readonly projectId: string;
+  readonly type: ActivityType;
+  readonly description: string;
+  readonly createdAt: string;
 }
 
 export interface ChatMessage {

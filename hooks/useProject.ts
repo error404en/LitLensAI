@@ -1,45 +1,45 @@
-import { useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useProjectStore } from "../stores/project.store"
-import { getProjectById } from "../lib/api"
+import { ProjectsService } from "../services/projects.service"
+import { Project } from "../lib/types"
 
-export function useProject(projectId: string | null) {
+export function useProject(id?: string) {
   const store = useProjectStore()
-  
-  const cachedProject = store.projects.find(p => p.id === projectId)
+  const [project, setProject] = useState<Project | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchProject = useCallback(async () => {
-    if (!projectId) return
-    
-    store.setLoading(true)
-    store.setError(null)
+    if (!id) return;
+    setIsLoading(true)
+    setError(null)
     try {
-      const data = await getProjectById(projectId)
-      if (data) {
-        store.setSelectedProjectId(data.id)
-      } else {
-        store.setError("Project not found")
-      }
+      const data = await ProjectsService.getProject(id)
+      // Hydrate stats
+      const stats = await ProjectsService.getProjectStats(id)
+      setProject({ ...data, stats })
+      store.setSelectedProjectId(id)
     } catch (err) {
-      store.setError(err instanceof Error ? err.message : "Failed to fetch project")
+      setError(err instanceof Error ? err.message : "Failed to fetch project")
     } finally {
-      store.setLoading(false)
+      setIsLoading(false)
     }
-  }, [projectId, store])
+  }, [id, store])
 
   useEffect(() => {
-    if (projectId && !cachedProject) {
-      fetchProject()
-    } else if (projectId) {
-      store.setSelectedProjectId(projectId)
-    } else {
-      store.setSelectedProjectId(null)
-    }
-  }, [projectId, cachedProject, fetchProject, store])
+    fetchProject()
+    return () => store.setSelectedProjectId(null)
+  }, [fetchProject])
 
   return {
-    project: cachedProject || store.projects.find(p => p.id === store.selectedProjectId),
-    isLoading: store.isLoading,
-    error: store.error,
+    project,
+    isLoading,
+    error,
     refresh: fetchProject,
+    updateProject: async (updates: Partial<Project>) => {
+      if (!id) return;
+      await ProjectsService.updateProject(id, updates);
+      await fetchProject();
+    }
   }
 }
