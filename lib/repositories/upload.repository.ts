@@ -129,26 +129,6 @@ export const UploadRepository = {
 
     if (error) throw new DatabaseError(error.message, error);
 
-    // If status is 'uploading', we push to Supabase Storage
-    if (status === "uploading") {
-      const file = fileCache.get(id);
-      if (file) {
-        // Run upload asynchronously in background
-        const { data: userUUID } = await supabase.rpc('get_current_user_id');
-        const storagePath = `${userUUID}/${Date.now()}_${file.name}`;
-        
-        supabase.storage
-          .from("papers")
-          .upload(storagePath, file, { upsert: true })
-          .then(({ error: storageError }) => {
-            if (storageError) {
-              console.error("Storage upload failed:", storageError);
-              this.updateStatus(id, "failed", { error: storageError.message });
-            }
-          });
-      }
-    }
-
     // Return reconstructed object
     const file = fileCache.get(id);
     return {
@@ -179,4 +159,17 @@ export const UploadRepository = {
     if (error) throw new DatabaseError(error.message, error);
     fileCache.delete(id);
   },
+
+  async uploadFileToStorage(file: File): Promise<string> {
+    const supabase = createClient();
+    const { data: userUUID } = await supabase.rpc('get_current_user_id');
+    const storagePath = `${userUUID}/${Date.now()}_${file.name}`;
+
+    const { error } = await supabase.storage
+      .from("papers-bucket")
+      .upload(storagePath, file, { upsert: true });
+
+    if (error) throw new StorageError(error.message, error);
+    return storagePath;
+  }
 };

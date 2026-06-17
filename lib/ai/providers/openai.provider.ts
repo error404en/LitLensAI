@@ -1,0 +1,49 @@
+import { AIProvider } from "./ai-provider.interface";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
+
+export class OpenAIProvider implements AIProvider {
+  private chatModel: ChatOpenAI;
+  private embeddings: OpenAIEmbeddings;
+
+  constructor() {
+    this.chatModel = new ChatOpenAI({
+      modelName: "gpt-4o",
+      temperature: 0,
+    });
+
+    this.embeddings = new OpenAIEmbeddings({
+      modelName: "text-embedding-3-small",
+    });
+  }
+
+  async generate(messages: any[]): Promise<string> {
+    const response = await this.chatModel.invoke(messages);
+    return response.content.toString();
+  }
+
+  async embed(text: string): Promise<number[]> {
+    return this.embeddings.embedQuery(text);
+  }
+
+  async embedBatch(texts: string[]): Promise<number[][]> {
+    return this.embeddings.embedDocuments(texts);
+  }
+
+  async *stream(messages: any[]): AsyncIterable<string> {
+    const stream = await this.chatModel.stream(messages);
+    for await (const chunk of stream) {
+      yield chunk.content.toString();
+    }
+  }
+
+  async health(): Promise<boolean> {
+    try {
+      if (!process.env.OPENAI_API_KEY) return false;
+      // Do a quick test
+      await this.embeddings.embedQuery("test");
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}

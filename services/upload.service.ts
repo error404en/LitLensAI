@@ -101,20 +101,56 @@ export const UploadService = {
     onStatusChange("uploading");
     await UploadRepository.updateStatus(uploadId, "uploading");
 
+    let fileUrl = "";
+    try {
+      fileUrl = await UploadRepository.uploadFileToStorage(file);
+    } catch (err) {
+      const failed = await UploadRepository.updateStatus(uploadId, "failed", { error: "Storage upload failed" });
+      onStatusChange("failed");
+      return failed;
+    }
+
     await simulateProgress(onProgress);
 
-    // Step 4: Processing (future: Inngest job trigger)
+    // Step 4: Processing (trigger Inngest job)
     onStatusChange("processing");
     await UploadRepository.updateStatus(uploadId, "processing", { progress: 100 });
 
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Create the Paper in DB
+    const { PapersRepository } = await import("../lib/repositories/papers.repository");
+    const paper = await PapersRepository.create({
+      projectId: (projectId || null) as unknown as string,
+      title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+      authors: [],
+      abstract: "",
+      year: new Date().getFullYear(),
+      journal: "",
+      tags: [],
+      status: "processing", // initial state
+      summary: undefined,
+      fileUrl: fileUrl,
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      isFavorite: false,
+      embeddingCreated: false,
+    });
+
+    // Trigger Pipeline
+    try {
+      await fetch("/api/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paperId: paper.id }),
+      });
+    } catch (err) {
+      console.error("Failed to trigger pipeline via API", err);
+    }
 
     // Step 5: Completed
-    const paperId = `paper_${Date.now()}`;
     const completed = await UploadRepository.updateStatus(uploadId, "completed", {
       progress: 100,
-      paperId,
+      paperId: paper.id,
       completedAt: new Date().toISOString(),
     });
     onStatusChange("completed");
