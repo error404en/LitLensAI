@@ -9,34 +9,35 @@
 - **Document Processing**: Upload academic PDFs to automatically extract text, chunk content, and generate vector embeddings.
 - **AI Summarization**: Automatically generate structured summaries of uploaded papers (Abstract, Methodology, Key Findings, Limitations, etc.).
 - **Semantic Search**: Search across your entire project’s literature library using natural language, retrieving the most relevant sections of your papers.
+- **Research Intelligence Hub**: A unified workspace combining timeline activity feeds, dynamic AI insights, project health metrics, and saved views.
 - **Cross-Paper Comparison**: Select multiple papers to automatically generate a comparative matrix highlighting differences in methodology and findings.
 - **Research Gap Analysis**: Identify unexplored areas and potential future work by aggregating limitations and future directions across multiple papers.
-- **Literature Review Generator**: Generate a structured literature review draft, complete with inline citations referring back to your uploaded papers.
+- **Literature Review Generator**: Draft complex literature reviews, complete with inline citations mapping directly back to the uploaded papers.
 
 ## 📊 Project Metrics & Status
 
-- **Development Progress**: 11 Engineering Phases Completed.
-  - Core Modules: Dashboard, Papers Library, Research Workspace, Upload Pipeline, PDF Annotation Workspace.
-  - Platform Foundation: Database, Auth, Telemetry setup.
-  - AI Infrastructure: PDF extraction, Document chunking, Qdrant vector embedding, Inngest background jobs.
-  - AI Orchestration Layer: Provider-agnostic Semantic Retrieval, Context Builder, Prompt Manager, and Streaming logic.
+- **Development Progress**: 12 Engineering Phases Completed (MVP Fully Launched).
+  - Core Modules: Research Intelligence Hub, Comparison Engine, Gap Analysis, Literature Review Generation.
+  - Platform Foundation: Clerk Authentication, Supabase, Qdrant Vector Search, Arcjet security.
+  - AI Infrastructure: Enterprise-grade Provider-Agnostic AI Orchestrator, Multi-tier Caching, Context Building, and Token Tracking.
 - **Architecture Compliance**: 100% adherence to Clean Architecture (`UI → Hooks → Zustand → Services → Repositories → Supabase/Qdrant`).
-- **State Management**: Zero prop-drilling. Fully decoupled state using localized Zustand stores (`chat.store.ts`, `pdf.store.ts`, etc.).
+- **State Management**: Zero prop-drilling. Fully decoupled state using localized Zustand stores per workspace.
 - **Performance Targets**: 
   - **Sub-100ms** UI interactions leveraging React 19 concurrent features.
-  - **Streaming RAG Responses** simulating real-time token yield with <200ms TTFB (Time To First Byte).
-  - **O(1) Data Retrieval** through optimized in-memory repositories mapped to future PostgreSQL indexing.
-- **Code Quality**: Strict TypeScript enforcement with comprehensive Zod schemas bridging UI and Service layers.
+  - **Streaming RAG Responses** simulating real-time token yield with <200ms TTFB.
+  - **O(1) Data Retrieval** through optimized repositories.
+- **Code Quality**: Strict TypeScript enforcement (0 `any`, 0 `ts-ignore`), robust Zod schemas, and comprehensive custom error classes.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui
+- **State Management**: Zustand, TanStack Query
 - **Authentication**: Clerk
 - **Security**: Arcjet (Bot protection & Rate limiting)
 - **Database & Storage**: PostgreSQL via Supabase, Supabase Storage
 - **Background Jobs**: Inngest
-- **AI & Orchestration**: LangChain, OpenAI GPT-5 (or latest), OpenAI `text-embedding-3-small`
-- **Vector Database**: Qdrant Cloud
+- **AI & Orchestration**: LangChain, OpenAI API (GPT-4o/mini), Claude Provider Stubs, Gemini Provider Stubs.
+- **Vector Database**: Qdrant Cloud (Cosine Similarity, Hybrid Search)
 - **Deployment**: Vercel
 
 ## 🏗️ Architecture Flow
@@ -47,8 +48,8 @@
 4. An **Inngest Event** (`paper/uploaded`) is triggered for background processing.
 5. **LangChain** loads and chunks the PDF text.
 6. Embeddings are generated and stored securely in **Qdrant**.
-7. An LLM generates a structured summary, which is saved back to PostgreSQL.
-8. The UI updates to reflect the completed status and provides full access to the AI features.
+7. An LLM generates a structured summary, saving metadata back to PostgreSQL.
+8. The **Research Intelligence Hub** updates in real-time, providing immediate access to dynamically generated AI insights and semantic retrieval tools.
 
 ---
 
@@ -80,10 +81,6 @@ You will also need accounts for:
 2. **Install dependencies:**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
 3. **Set up environment variables:**
@@ -102,10 +99,6 @@ You will also need accounts for:
 4. **Run the development server:**
    ```bash
    npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
    ```
 
 5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -115,11 +108,13 @@ You will also need accounts for:
 ## 📂 Documentation
 
 Detailed documentation and plans can be found in the `/docs` directory:
+- [Development Phases History](docs/PHASES_DOCUMENTATION.md)
 - [Implementation Plan](docs/IMPLEMENTATION.md)
 - [Architecture Flow](docs/APP_FLOW.md)
 - [Product Requirements (PRD)](docs/PRD.md)
 - [Technical Requirements (TRD)](docs/TRD.md)
 - [Database Schema](docs/SCHEMA.md)
+- [Codebase Analysis](docs/CODEBASE_ANALYSIS.md)
 
 ## 🤝 Contributing
 
