@@ -25,8 +25,8 @@ export class PromptBuilder {
   /**
    * Generates the final messages array for the LLM.
    */
-  buildMessages(baseSystemPrompt: string, context: StructuredContext, userQuestion: string): any[] {
-    const messages: any[] = [];
+  buildMessages(baseSystemPrompt: string, context: StructuredContext, userQuestion: string): Message[] {
+    const messages: Message[] = [];
     
     // System Prompt
     messages.push({

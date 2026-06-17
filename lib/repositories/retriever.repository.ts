@@ -2,7 +2,7 @@ import { adminClient } from "../supabase/admin";
 import { QdrantRepository } from "../ai/vector/qdrant.client";
 
 export const RetrieverRepository = {
-  async searchSimilarChunks(vector: number[], filter?: any, limit: number = 5) {
+  async searchSimilarChunks(vector: number[], filter?: Record<string, unknown>, limit: number = 5) {
     const qdrant = new QdrantRepository();
     // Similarity search in Qdrant
     const points = await qdrant.similaritySearch(vector, filter, limit);

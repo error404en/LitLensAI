@@ -22,8 +22,10 @@ export function useProjectStats(projectId?: string) {
   }, [projectId])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats()
-  }, [fetchStats])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
 
   return {
     stats,

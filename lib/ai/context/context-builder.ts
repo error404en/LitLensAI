@@ -5,8 +5,8 @@ export interface BuildContextOptions {
   selectedText?: string;
   retrievedChunks?: RankedChunk[];
   conversationHistory?: Message[];
-  projectMetadata?: Record<string, any>;
-  paperMetadata?: Record<string, any>;
+  projectMetadata?: Record<string, unknown>;
+  paperMetadata?: Record<string, unknown>;
 }
 
 export interface StructuredContext {

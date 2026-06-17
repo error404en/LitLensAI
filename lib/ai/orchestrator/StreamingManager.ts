@@ -11,7 +11,7 @@ export class StreamingManager {
         yield { type: "delta", content: chunk };
       }
       yield { type: "complete" };
-    } catch (error: any) {
+    } catch (error: unknown) {
       yield { type: "error", error: error.message };
     }
   }

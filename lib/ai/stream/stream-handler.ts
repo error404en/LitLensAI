@@ -18,7 +18,7 @@ export class StreamHandler {
       }
       
       yield { type: "complete" };
-    } catch (error: any) {
+    } catch (error: unknown) {
       yield { type: "error", error: error.message || "Streaming failed" };
     }
   }

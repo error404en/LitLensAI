@@ -22,8 +22,10 @@ export function useProjectActivity(projectId?: string) {
   }, [projectId])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchActivity()
-  }, [fetchActivity])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId])
 
   return {
     activities,

@@ -1,4 +1,4 @@
-import { TaskName, TaskRegistry, TaskConfiguration } from "./TaskRegistry";
+import { TaskRegistry, TaskConfiguration } from "./TaskRegistry";
 
 export type FeatureName = 
   | "AI Chat"

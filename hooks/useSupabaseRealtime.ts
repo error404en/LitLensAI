@@ -23,7 +23,7 @@ export function useSupabaseRealtime() {
           // Invalidate any upload queries or related paper queries
           queryClient.invalidateQueries({ queryKey: ["uploads"] })
           // If status completed, a new paper was created probably
-          if (payload.new && (payload.new as any).status === 'completed') {
+          if (payload.new && (payload.new as { status?: string }).status === 'completed') {
             queryClient.invalidateQueries({ queryKey: ["papers"] })
           }
         }
@@ -31,28 +31,28 @@ export function useSupabaseRealtime() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'papers' },
-        (payload) => {
+        (_payload) => {
           queryClient.invalidateQueries({ queryKey: ["papers"] })
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'projects' },
-        (payload) => {
+        (_payload) => {
           queryClient.invalidateQueries({ queryKey: ["projects"] })
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'conversations' },
-        (payload) => {
+        (_payload) => {
           queryClient.invalidateQueries({ queryKey: ["conversations"] })
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'messages' },
-        (payload) => {
+        (_payload) => {
           queryClient.invalidateQueries({ queryKey: ["messages"] })
         }
       )

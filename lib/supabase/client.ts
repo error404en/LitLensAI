@@ -7,7 +7,7 @@ export function createClient() {
     {
       global: {
         fetch: async (url, options = {}) => {
-          // @ts-ignore
+          // @ts-expect-error - Next.js internal type missing occasionally in dev
           const clerkToken = await window.Clerk?.session?.getToken({ template: 'supabase' });
           const headers = new Headers(options?.headers);
           if (clerkToken) {

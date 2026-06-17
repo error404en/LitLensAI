@@ -1,8 +1,10 @@
+import { Message } from "../prompt/prompt-builder";
+
 export interface AIProvider {
   /**
    * Generates a response based on an array of messages
    */
-  generate(messages: any[]): Promise<string>;
+  generate(messages: Message[]): Promise<string>;
 
   /**
    * Embeds text into a vector
@@ -17,7 +19,7 @@ export interface AIProvider {
   /**
    * Streams a response based on an array of messages
    */
-  stream(messages: any[]): AsyncIterable<string>;
+  stream(messages: Message[]): AsyncIterable<string>;
 
   /**
    * Checks if the provider is healthy and correctly configured

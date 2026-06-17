@@ -3,7 +3,7 @@ import { QdrantClient } from "@qdrant/js-client-rest";
 export interface VectorPoint {
   id: string; // UUID
   vector: number[];
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 export class QdrantRepository {
@@ -53,7 +53,7 @@ export class QdrantRepository {
   /**
    * Search for similar vectors
    */
-  async similaritySearch(vector: number[], filter?: any, limit: number = 5) {
+  async similaritySearch(vector: number[], filter?: Record<string, unknown>, limit: number = 5) {
     return this.client.search(this.collectionName, {
       vector: vector,
       filter: filter,

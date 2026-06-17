@@ -117,7 +117,7 @@ export const UploadRepository = {
 
   async updateStatus(id: string, status: UploadStatus, extra?: Partial<UploadFile>): Promise<UploadFile> {
     const supabase = createClient();
-    const updateData: any = { status, updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
     if (extra?.error) updateData.error_message = extra.error;
 
     const { data, error } = await supabase

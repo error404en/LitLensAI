@@ -4,7 +4,7 @@ export interface Message {
   id?: string;
   role: "system" | "user" | "assistant";
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt?: string;
 }
 

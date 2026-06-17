@@ -53,8 +53,16 @@ export const PDFRepository = {
       .eq("paper_id", paperId)
       .order("created_at", { ascending: true });
 
+    interface BookmarkRow {
+      id: string;
+      paper_id: string;
+      page_number?: number;
+      label?: string;
+      created_at: string;
+    }
+
     if (error) throw new DatabaseError(error.message, error);
-    return data.map((b: any) => ({
+    return data.map((b: BookmarkRow) => ({
       id: b.id,
       paperId: b.paper_id,
       page: 1, // Actually bookmarks table schema doesn't have page_number? Wait...
@@ -105,8 +113,17 @@ export const PDFRepository = {
       .eq("paper_id", paperId)
       .order("created_at", { ascending: true });
 
+    interface HighlightRow {
+      id: string;
+      paper_id: string;
+      page_number: number;
+      text?: string;
+      color?: string;
+      created_at: string;
+    }
+
     if (error) throw new DatabaseError(error.message, error);
-    return data.map((h: any) => ({
+    return data.map((h: HighlightRow) => ({
       id: h.id,
       paperId: h.paper_id,
       page: h.page_number,
@@ -161,8 +178,18 @@ export const PDFRepository = {
       .eq("paper_id", paperId)
       .order("created_at", { ascending: true });
 
+    interface AnnotationRow {
+      id: string;
+      paper_id: string;
+      page_number: number;
+      content: string;
+      highlight_id?: string;
+      created_at: string;
+      updated_at: string;
+    }
+
     if (error) throw new DatabaseError(error.message, error);
-    return data.map((a: any) => ({
+    return data.map((a: AnnotationRow) => ({
       id: a.id,
       paperId: a.paper_id,
       page: a.page_number,

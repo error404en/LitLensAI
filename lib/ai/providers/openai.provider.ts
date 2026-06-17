@@ -16,7 +16,7 @@ export class OpenAIProvider implements AIProvider {
     });
   }
 
-  async generate(messages: any[]): Promise<string> {
+  async generate(messages: Message[]): Promise<string> {
     const response = await this.chatModel.invoke(messages);
     return response.content.toString();
   }
@@ -29,7 +29,7 @@ export class OpenAIProvider implements AIProvider {
     return this.embeddings.embedDocuments(texts);
   }
 
-  async *stream(messages: any[]): AsyncIterable<string> {
+  async *stream(messages: Message[]): AsyncIterable<string> {
     const stream = await this.chatModel.stream(messages);
     for await (const chunk of stream) {
       yield chunk.content.toString();

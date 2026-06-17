@@ -1,8 +1,31 @@
-import { Paper } from "../types";
+import { Paper, PaperStatus, Author, PaperSummary } from "../types";
 import { createClient } from "../supabase/client";
 import { DatabaseError } from "../errors";
 
-function mapPaper(row: any): Paper {
+export interface PaperRow {
+  id: string;
+  project_id: string;
+  user_id: string;
+  title: string;
+  authors: Author[] | string;
+  abstract: string;
+  year: number;
+  journal?: string;
+  tags: string[] | string;
+  status: string;
+  summary?: PaperSummary | string;
+  file_url: string;
+  file_name: string;
+  file_size?: number;
+  mime_type?: string;
+  is_favorite: boolean;
+  embedding_created: boolean;
+  uploaded_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+function mapPaper(row: PaperRow): Paper {
   return {
     id: row.id,
     projectId: row.project_id,
@@ -13,7 +36,7 @@ function mapPaper(row: any): Paper {
     year: row.year,
     journal: row.journal,
     tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
-    status: row.status as any,
+    status: row.status as PaperStatus,
     summary: typeof row.summary === 'string' ? JSON.parse(row.summary) : row.summary,
     fileUrl: row.file_url,
     fileName: row.file_name,
@@ -103,7 +126,7 @@ export const PapersRepository = {
   async update(id: string, updates: Partial<Omit<Paper, "id" | "createdAt" | "updatedAt" | "userId">>): Promise<Paper> {
     const supabase = createClient();
     
-    const updateData: any = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.authors !== undefined) updateData.authors = updates.authors;
     if (updates.abstract !== undefined) updateData.abstract = updates.abstract;

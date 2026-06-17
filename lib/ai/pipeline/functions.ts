@@ -4,7 +4,7 @@ import { AIPipelineService } from "@/services/ai-pipeline.service";
 export const processPaper = inngest.createFunction(
   { id: "process-paper", triggers: [{ event: "paper.uploaded" }] },
   async ({ event, step }) => {
-    const paperId = (event.data as any).paperId;
+    const paperId = (event.data as { paperId: string }).paperId;
     const pipelineService = new AIPipelineService();
 
     // 1. Initial State
@@ -13,7 +13,7 @@ export const processPaper = inngest.createFunction(
     });
 
     // 2. Extract
-    const { extraction, buffer } = await step.run("extract-pdf", async () => {
+    const { extraction } = await step.run("extract-pdf", async () => {
       return await pipelineService.extract(paperId);
     });
 
@@ -29,7 +29,7 @@ export const processPaper = inngest.createFunction(
     await step.run("mark-embedding", async () => {
       await pipelineService.updateStatus(paperId, "embedding");
     });
-    const { embeddings, points } = await step.run("embed-chunks", async () => {
+    const { points } = await step.run("embed-chunks", async () => {
       return await pipelineService.embed(paperId, chunks);
     });
 

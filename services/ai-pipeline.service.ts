@@ -71,7 +71,7 @@ export class AIPipelineService {
     return dbChunks; // returns id, paper_id, etc.
   }
 
-  async embed(paperId: string, chunks: any[]) {
+  async embed(paperId: string, chunks: { id: string; content: string; page_number: number }[]) {
     await this.pipelineRepo.log(paperId, "embed", "Started embedding generation");
     
     const texts = chunks.map(c => c.content);
@@ -105,7 +105,7 @@ export class AIPipelineService {
     return { embeddings, points };
   }
 
-  async storeVectors(paperId: string, points: any[]) {
+  async storeVectors(paperId: string, points: { pointId: string; chunkId: string; vector: number[]; payload: Record<string, unknown> }[]) {
     await this.pipelineRepo.log(paperId, "store-vectors", "Storing vectors in Qdrant and metadata in DB");
     
     // 1. Ensure collection exists
@@ -127,7 +127,7 @@ export class AIPipelineService {
     await this.pipelineRepo.log(paperId, "store-vectors", "Vectors stored successfully");
   }
 
-  async generateMetadata(paperId: string, extraction: any) {
+  async generateMetadata(paperId: string, extraction: import("../lib/ai/parser/pdf.parser").PDFExtractionResult) {
     await this.pipelineRepo.log(paperId, "generate-metadata", "Generating advanced metadata");
     
     const prompt = `Analyze this abstract/intro and generate 5 keywords and a 2 sentence summary.

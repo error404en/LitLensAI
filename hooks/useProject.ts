@@ -27,9 +27,11 @@ export function useProject(id?: string) {
   }, [id, store])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProject()
     return () => store.setSelectedProjectId(null)
-  }, [fetchProject])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
   return {
     project,

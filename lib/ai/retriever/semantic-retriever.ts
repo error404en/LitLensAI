@@ -11,7 +11,7 @@ export class SemanticRetriever {
   /**
    * Core retrieve function.
    */
-  async retrieve(query: string, filter?: any, limit: number = 5): Promise<RankedChunk[]> {
+  async retrieve(query: string, filter?: Record<string, unknown>, limit: number = 5): Promise<RankedChunk[]> {
     const vector = await this.provider.embed(query);
     const results = await this.repo.searchSimilarChunks(vector, filter, limit);
     return this.ranker.rank(results);

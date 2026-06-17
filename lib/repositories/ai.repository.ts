@@ -12,8 +12,18 @@ export const AIRepository = {
       .eq("paper_id", paperId)
       .order("updated_at", { ascending: false });
 
+    interface ConversationRow {
+      id: string;
+      paper_id: string;
+      project_id?: string;
+      title?: string;
+      is_pinned: boolean;
+      created_at: string;
+      updated_at: string;
+    }
+
     if (error) throw new DatabaseError(error.message, error);
-    return data.map((c: any) => ({
+    return data.map((c: ConversationRow) => ({
       id: c.id,
       paperId: c.paper_id,
       projectId: c.project_id,
@@ -80,7 +90,7 @@ export const AIRepository = {
 
   async updateConversation(id: string, updates: Partial<Pick<AIConversation, "title" | "isPinned" | "isFavorite">>): Promise<AIConversation> {
     const supabase = createClient();
-    const updateData: any = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.isPinned !== undefined) updateData.is_pinned = updates.isPinned;
 
@@ -119,11 +129,20 @@ export const AIRepository = {
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
+    interface MessageRow {
+      id: string;
+      conversation_id: string;
+      role: "user" | "assistant" | "system";
+      content: string;
+      citations?: string;
+      created_at: string;
+    }
+
     if (error) throw new DatabaseError(error.message, error);
-    return data.map((m: any) => ({
+    return data.map((m: MessageRow) => ({
       id: m.id,
       conversationId: m.conversation_id,
-      role: m.role as any,
+      role: m.role,
       content: m.content,
       citations: m.citations ? JSON.parse(m.citations) : undefined,
       createdAt: m.created_at,
@@ -157,7 +176,7 @@ export const AIRepository = {
     return {
       id: data.id,
       conversationId: data.conversation_id,
-      role: data.role as any,
+      role: data.role as "system" | "user" | "assistant",
       content: data.content,
       citations: data.citations,
       createdAt: data.created_at,

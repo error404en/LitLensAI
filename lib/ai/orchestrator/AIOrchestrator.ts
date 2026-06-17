@@ -127,7 +127,7 @@ export class AIOrchestrator {
 
         return formattedResponse;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Log Failure
       const duration = Date.now() - startTime;
       await AIExecutionRepository.updateStatus(execution.id, "failed", duration, error.message);

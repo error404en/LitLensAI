@@ -1,9 +1,27 @@
-import { Project, ProjectActivity } from "../types";
+import { Project, ProjectActivity, ProjectStatus, ActivityType } from "../types";
 import { createClient } from "../supabase/client";
 import { DatabaseError } from "../errors";
 
-// Transform Supabase row to Project interface
-function mapProject(row: any): Project {
+export interface ProjectRow {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  status: ProjectStatus;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ActivityRow {
+  id: string;
+  project_id: string;
+  type: ActivityType;
+  description: string;
+  created_at: string;
+}
+
+function mapProject(row: ProjectRow): Project {
   return {
     id: row.id,
     userId: row.user_id,
@@ -16,11 +34,11 @@ function mapProject(row: any): Project {
   };
 }
 
-function mapActivity(row: any): ProjectActivity {
+function mapActivity(row: ActivityRow): ProjectActivity {
   return {
     id: row.id,
     projectId: row.project_id,
-    type: row.type as any,
+    type: row.type,
     description: row.description,
     createdAt: row.created_at,
   };
@@ -95,7 +113,7 @@ export const ProjectsRepository = {
   async update(id: string, updates: Partial<Omit<Project, "id" | "createdAt" | "updatedAt" | "userId">>): Promise<Project> {
     const supabase = createClient();
     
-    const updateData: any = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.description !== undefined) updateData.description = updates.description;
     if (updates.status !== undefined) updateData.status = updates.status;

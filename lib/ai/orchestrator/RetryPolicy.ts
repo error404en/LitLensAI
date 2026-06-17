@@ -9,7 +9,7 @@ export class RetryPolicy {
     while (attempt < maxRetries) {
       try {
         return await operation();
-      } catch (error: any) {
+      } catch (error: unknown) {
         attempt++;
         if (attempt >= maxRetries) {
           throw error;
