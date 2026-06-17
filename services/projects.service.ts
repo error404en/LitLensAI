@@ -1,13 +1,13 @@
 import { ProjectsRepository } from "../lib/repositories/projects.repository";
+import { PapersRepository } from "../lib/repositories/papers.repository";
 import { Project, ProjectActivity, ProjectStats, Paper } from "../lib/types";
-import { MOCK_PAPERS } from "../lib/mock-data";
 import { CreateProjectSchema, UpdateProjectSchema } from "../lib/validations/project.schema";
 
 export const ProjectsService = {
   async getProjects(): Promise<Project[]> {
     try {
       const projects = await ProjectsRepository.findAll();
-      // Hydrate stats for each project (mocking a database join or aggregation)
+      // Hydrate stats for each project
       const hydrated = await Promise.all(projects.map(async (p) => {
         const stats = await this.getProjectStats(p.id);
         return { ...p, stats };
@@ -35,7 +35,6 @@ export const ProjectsService = {
       const validatedData = CreateProjectSchema.parse({ title, description, isFavorite });
       return await ProjectsRepository.create({
         ...validatedData,
-        userId: "user_123", // Mock user
         status: "active",
       });
     } catch (error) {
@@ -81,11 +80,8 @@ export const ProjectsService = {
     }
   },
 
-  // Paper Attachments
-  // Note: Since we don't have a papers repository yet, we simulate it via service level using MOCK_PAPERS
   async getAttachedPapers(projectId: string): Promise<Paper[]> {
-    // In a real app, this queries the join table or papers table
-    return MOCK_PAPERS.filter(p => p.projectId === projectId);
+    return PapersRepository.findByProjectId(projectId);
   },
 
   async attachPaper(projectId: string, paperId: string): Promise<void> {

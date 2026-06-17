@@ -3,6 +3,8 @@ import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { QueryProvider } from '@/providers/query-provider';
+import { GlobalRealtime } from '@/components/providers/global-realtime';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,7 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark scroll-smooth">
+      <QueryProvider>
+        <GlobalRealtime />
+        <html lang="en" className="dark scroll-smooth">
         <head>
           {/* eslint-disable-next-line @next/next/no-page-custom-font */}
           <link 
@@ -47,6 +51,7 @@ export default function RootLayout({
           {children}
         </body>
       </html>
+      </QueryProvider>
     </ClerkProvider>
   );
 }

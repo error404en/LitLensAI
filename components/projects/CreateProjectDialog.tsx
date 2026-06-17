@@ -1,7 +1,13 @@
 import * as React from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Dialog } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
+import { CreateProjectSchema } from "../../lib/validations/project.schema"
+
+type CreateProjectFormValues = z.infer<typeof CreateProjectSchema>
 
 interface CreateProjectDialogProps {
   isOpen: boolean
@@ -10,42 +16,37 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ isOpen, onClose, onSubmit }: CreateProjectDialogProps) {
-  const [title, setTitle] = React.useState("")
-  const [description, setDescription] = React.useState("")
-  const [isFavorite, setIsFavorite] = React.useState(false)
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateProjectFormValues>({
+    resolver: zodResolver(CreateProjectSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      isFavorite: false,
+    },
+  })
 
   // Reset state when opened
   React.useEffect(() => {
     if (isOpen) {
-      setTitle("")
-      setDescription("")
-      setIsFavorite(false)
+      reset()
       setError(null)
     }
-  }, [isOpen])
+  }, [isOpen, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) {
-      setError("Title is required.")
-      return
-    }
-    if (title.length > 50) {
-      setError("Title must be 50 characters or less.")
-      return
-    }
-
-    setIsSubmitting(true)
+  const onFormSubmit = async (data: CreateProjectFormValues) => {
     setError(null)
     try {
-      await onSubmit(title.trim(), description.trim(), isFavorite)
+      await onSubmit(data.title.trim(), data.description?.trim() || "", data.isFavorite || false)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create project")
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -56,7 +57,7 @@ export function CreateProjectDialog({ isOpen, onClose, onSubmit }: CreateProject
       title="Create New Project"
       description="Organize a new literature review or research topic."
     >
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <form onSubmit={handleSubmit(onFormSubmit)} className="mt-4 space-y-4">
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
             {error}
@@ -69,13 +70,15 @@ export function CreateProjectDialog({ isOpen, onClose, onSubmit }: CreateProject
           </label>
           <Input
             id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Quantum Computing Review"
             autoFocus
             disabled={isSubmitting}
-            maxLength={50}
+            maxLength={100}
+            {...register("title")}
           />
+          {errors.title && (
+            <p className="text-xs text-destructive">{errors.title.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -84,23 +87,24 @@ export function CreateProjectDialog({ isOpen, onClose, onSubmit }: CreateProject
           </label>
           <Textarea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
             placeholder="Briefly describe the goal of this research project..."
             disabled={isSubmitting}
             rows={3}
             className="resize-none"
+            {...register("description")}
           />
+          {errors.description && (
+            <p className="text-xs text-destructive">{errors.description.message}</p>
+          )}
         </div>
 
         <div className="flex items-center space-x-2 pt-2">
           <input
             type="checkbox"
             id="favorite"
-            checked={isFavorite}
-            onChange={(e) => setIsFavorite(e.target.checked)}
             disabled={isSubmitting}
             className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+            {...register("isFavorite")}
           />
           <label htmlFor="favorite" className="text-sm font-medium text-foreground cursor-pointer">
             Mark as favorite

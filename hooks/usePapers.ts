@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useMemo } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { usePaperStore } from "../stores/paper.store"
 import { PapersService } from "../services/papers.service"
 
@@ -6,28 +7,16 @@ const ITEMS_PER_PAGE = 12
 
 export function usePapers(projectId?: string) {
   const store = usePaperStore()
+  const queryClient = useQueryClient()
 
-  const fetchPapers = useCallback(async () => {
-    store.setLoading(true)
-    store.setError(null)
-    try {
-      const data = await PapersService.getPapers(projectId)
-      store.setPapers(data)
-    } catch (err) {
-      store.setError(err instanceof Error ? err.message : "Failed to fetch papers")
-    } finally {
-      store.setLoading(false)
-    }
-  }, [projectId, store])
-
-  // Initial fetch
-  useEffect(() => {
-    fetchPapers()
-  }, [fetchPapers])
+  const { data: rawPapers = [], isLoading, error } = useQuery({
+    queryKey: ["papers", projectId],
+    queryFn: () => PapersService.getPapers(projectId),
+  })
 
   // 1. Derived state: Filtered
   const filteredPapers = useMemo(() => {
-    let result = [...store.papers]
+    let result = [...rawPapers]
 
     // Status Filter
     if (store.statusFilter !== "all") {
@@ -63,7 +52,7 @@ export function usePapers(projectId?: string) {
     }
 
     return result
-  }, [store.papers, store.statusFilter, store.isFavoriteFilter, store.tagFilter, store.searchQuery])
+  }, [rawPapers, store.statusFilter, store.isFavoriteFilter, store.tagFilter, store.searchQuery])
 
   // 2. Derived state: Sorted
   const sortedPapers = useMemo(() => {
@@ -102,8 +91,8 @@ export function usePapers(projectId?: string) {
     // Data
     papers: paginatedPapers,
     totalPapersCount: sortedPapers.length,
-    isLoading: store.isLoading,
-    error: store.error,
+    isLoading,
+    error: error instanceof Error ? error.message : error ? "Failed to fetch papers" : null,
     
     // View state
     viewMode: store.viewMode,
@@ -128,6 +117,6 @@ export function usePapers(projectId?: string) {
     setTagFilter: store.setTagFilter,
     setSortBy: store.setSortBy,
     setCurrentPage: store.setCurrentPage,
-    refresh: fetchPapers,
+    refresh: () => queryClient.invalidateQueries({ queryKey: ["papers"] }),
   }
 }

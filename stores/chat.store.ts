@@ -3,7 +3,6 @@ import { AIChatMessage, AIConversation, AIContext, AISuggestedQuestion } from ".
 
 interface ChatState {
   // Data
-  conversations: AIConversation[];
   messages: AIChatMessage[];
   selectedConversationId: string | null;
   selectedContext: AIContext | null;
@@ -17,11 +16,6 @@ interface ChatState {
   error: string | null;
 
   // Actions: Data
-  setConversations: (conversations: AIConversation[]) => void;
-  addConversation: (conversation: AIConversation) => void;
-  updateConversation: (id: string, updates: Partial<AIConversation>) => void;
-  removeConversation: (id: string) => void;
-
   setMessages: (messages: AIChatMessage[]) => void;
   addMessage: (message: AIChatMessage) => void;
   updateMessage: (id: string, updates: Partial<AIChatMessage>) => void;
@@ -39,7 +33,6 @@ interface ChatState {
 }
 
 export const useChatStore = create<ChatState>((set) => ({
-  conversations: [],
   messages: [],
   selectedConversationId: null,
   selectedContext: null,
@@ -50,16 +43,6 @@ export const useChatStore = create<ChatState>((set) => ({
   isTyping: false,
   isLoading: false,
   error: null,
-
-  setConversations: (conversations) => set({ conversations }),
-  addConversation: (conversation) => set((s) => ({ conversations: [conversation, ...s.conversations] })),
-  updateConversation: (id, updates) => set((s) => ({
-    conversations: s.conversations.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-  })),
-  removeConversation: (id) => set((s) => ({
-    conversations: s.conversations.filter((c) => c.id !== id),
-    selectedConversationId: s.selectedConversationId === id ? null : s.selectedConversationId,
-  })),
 
   setMessages: (messages) => set({ messages }),
   addMessage: (message) => set((s) => ({ messages: [...s.messages, message] })),

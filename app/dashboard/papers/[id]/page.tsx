@@ -19,9 +19,9 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "../../../../lib/utils";
 
-export default function PDFWorkspacePage() {
-  const params = useParams();
-  const id = params.id as string;
+export default function PDFWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
 
   const {
     isLoading: isPDFLoading,

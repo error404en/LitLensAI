@@ -2,10 +2,7 @@ import { create } from "zustand"
 import { Paper, PaperStatus } from "../lib/types"
 
 interface PaperState {
-  papers: readonly Paper[]
   selectedPaperId: string | null
-  isLoading: boolean
-  error: string | null
   
   // View Preferences
   viewMode: "grid" | "list"
@@ -19,10 +16,7 @@ interface PaperState {
   currentPage: number
 
   // Actions
-  setPapers: (papers: readonly Paper[]) => void
   setSelectedPaperId: (id: string | null) => void
-  setLoading: (isLoading: boolean) => void
-  setError: (error: string | null) => void
   
   setViewMode: (mode: "grid" | "list") => void
   setSearchQuery: (query: string) => void
@@ -34,11 +28,7 @@ interface PaperState {
 }
 
 export const usePaperStore = create<PaperState>((set) => ({
-  papers: [],
   selectedPaperId: null,
-  isLoading: false,
-  error: null,
-
   viewMode: "grid",
 
   searchQuery: "",
@@ -48,10 +38,7 @@ export const usePaperStore = create<PaperState>((set) => ({
   sortBy: "newest",
   currentPage: 1,
 
-  setPapers: (papers) => set({ papers }),
   setSelectedPaperId: (id) => set({ selectedPaperId: id }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
   
   setViewMode: (viewMode) => set({ viewMode }),
   setSearchQuery: (searchQuery) => set({ searchQuery, currentPage: 1 }),

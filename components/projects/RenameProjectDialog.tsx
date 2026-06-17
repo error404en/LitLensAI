@@ -1,6 +1,15 @@
 import * as React from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Dialog } from "../ui/dialog"
 import { Button } from "../ui/button"
+
+const RenameProjectSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100),
+})
+
+type RenameProjectFormValues = z.infer<typeof RenameProjectSchema>
 
 interface RenameProjectDialogProps {
   isOpen: boolean
@@ -10,43 +19,53 @@ interface RenameProjectDialogProps {
 }
 
 export function RenameProjectDialog({ isOpen, onClose, onRename, currentName }: RenameProjectDialogProps) {
-  const [name, setName] = React.useState(currentName)
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RenameProjectFormValues>({
+    resolver: zodResolver(RenameProjectSchema),
+    defaultValues: { title: currentName },
+  })
 
   React.useEffect(() => {
     if (isOpen) {
-      setName(currentName)
+      reset({ title: currentName })
     }
-  }, [isOpen, currentName])
+  }, [isOpen, currentName, reset])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || name === currentName) return
-    setIsSubmitting(true)
+  const name = watch("title")
+
+  const onFormSubmit = async (data: RenameProjectFormValues) => {
+    if (!data.title.trim() || data.title === currentName) return
     try {
-      await onRename(name.trim())
+      await onRename(data.title.trim())
       onClose()
-    } finally {
-      setIsSubmitting(false)
+    } catch (err) {
+      console.error(err)
     }
   }
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title="Rename Project" description="Enter a new name for your project.">
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <form onSubmit={handleSubmit(onFormSubmit)} className="mt-4 space-y-4">
         <div className="space-y-2">
           <input
             autoFocus
             className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
             placeholder="Project name"
             maxLength={100}
+            {...register("title")}
           />
+          {errors.title && (
+            <p className="text-xs text-destructive">{errors.title.message}</p>
+          )}
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
-          <Button type="submit" disabled={isSubmitting || !name.trim() || name === currentName}>
+          <Button type="submit" disabled={isSubmitting || !name?.trim() || name === currentName}>
             {isSubmitting ? "Renaming..." : "Rename"}
           </Button>
         </div>

@@ -1,48 +1,35 @@
-import { useState, useEffect, useCallback } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { PapersService } from "../services/papers.service"
-import { Paper } from "../lib/types"
 import { usePaperStore } from "../stores/paper.store"
+import { useEffect } from "react"
 
 export function usePaper(paperId: string | null) {
   const store = usePaperStore()
-  
-  // Try to find it in the store first
-  const cachedPaper = store.papers.find(p => p.id === paperId)
+  const queryClient = useQueryClient()
 
-  const fetchPaper = useCallback(async () => {
-    if (!paperId) return
-    
-    store.setLoading(true)
-    store.setError(null)
-    try {
+  const { data: paper, isLoading, error } = useQuery({
+    queryKey: ["paper", paperId],
+    queryFn: async () => {
+      if (!paperId) return null
       const data = await PapersService.getPaper(paperId)
-      if (data) {
-        // Update the specific paper in the store if we have it, else we might just want to store it as selected
-        store.setSelectedPaperId(data.id)
-      } else {
-        store.setError("Paper not found")
-      }
-    } catch (err) {
-      store.setError(err instanceof Error ? err.message : "Failed to fetch paper")
-    } finally {
-      store.setLoading(false)
-    }
-  }, [paperId, store])
+      if (!data) throw new Error("Paper not found")
+      return data
+    },
+    enabled: !!paperId,
+  })
 
   useEffect(() => {
-    if (paperId && !cachedPaper) {
-      fetchPaper()
-    } else if (paperId) {
+    if (paperId) {
       store.setSelectedPaperId(paperId)
     } else {
       store.setSelectedPaperId(null)
     }
-  }, [paperId, cachedPaper, fetchPaper, store])
+  }, [paperId, store])
 
   return {
-    paper: cachedPaper || store.papers.find(p => p.id === store.selectedPaperId),
-    isLoading: store.isLoading,
-    error: store.error,
-    refresh: fetchPaper,
+    paper: paper || undefined,
+    isLoading,
+    error: error instanceof Error ? error.message : error ? "Failed to fetch paper" : null,
+    refresh: () => queryClient.invalidateQueries({ queryKey: ["paper", paperId] }),
   }
 }

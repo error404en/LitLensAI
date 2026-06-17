@@ -12,8 +12,9 @@ import { Loading } from "../../../../components/ui/loading"
 
 import { ProjectNotesEditor } from "../../../../components/projects/ProjectNotesEditor"
 
-export default function SingleProjectPage({ params }: { params: { projectId: string } }) {
-  const { project, isLoading, error, refresh } = useProject(params.projectId)
+export default function SingleProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
+  const unwrappedParams = React.use(params)
+  const { project, isLoading, error, refresh } = useProject(unwrappedParams.projectId)
   const [activeTab, setActiveTab] = React.useState("overview")
 
   if (isLoading && !project) {

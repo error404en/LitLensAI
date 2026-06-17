@@ -1,4 +1,5 @@
 import React from 'react';
+import { UserButton } from "@clerk/nextjs";
 
 export function TopNavBar() {
   return (
@@ -17,9 +18,7 @@ export function TopNavBar() {
         <button className="hover:text-primary dark:hover:text-primary transition-opacity cursor-pointer">
           <span className="material-symbols-outlined">notifications</span>
         </button>
-        <button className="hover:text-primary dark:hover:text-primary transition-opacity cursor-pointer">
-          <span className="material-symbols-outlined">account_circle</span>
-        </button>
+        <UserButton />
       </div>
     </header>
   );

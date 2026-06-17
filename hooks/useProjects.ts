@@ -1,31 +1,21 @@
-import { useEffect, useMemo, useCallback } from "react"
+import { useMemo } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useProjectStore } from "../stores/project.store"
 import { ProjectsService } from "../services/projects.service"
 
 export function useProjects() {
   const store = useProjectStore()
+  const queryClient = useQueryClient()
 
-  const fetchProjects = useCallback(async () => {
-    store.setLoading(true)
-    store.setError(null)
-    try {
-      const data = await ProjectsService.getProjects()
-      store.setProjects(data)
-    } catch (err) {
-      store.setError(err instanceof Error ? err.message : "Failed to fetch projects")
-    } finally {
-      store.setLoading(false)
-    }
-  }, [store])
+  // 1. Fetch data with TanStack Query
+  const { data: rawProjects = [], isLoading, error } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => ProjectsService.getProjects(),
+  })
 
-  // Initial fetch
-  useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
-
-  // 1. Derived state: Filtered
+  // 2. Derived state: Filtered
   const filteredProjects = useMemo(() => {
-    let result = [...store.projects]
+    let result = [...rawProjects]
 
     // Status Filter
     if (store.statusFilter !== "all") {
@@ -52,9 +42,9 @@ export function useProjects() {
     }
 
     return result
-  }, [store.projects, store.statusFilter, store.isFavoriteFilter, store.searchQuery])
+  }, [rawProjects, store.statusFilter, store.isFavoriteFilter, store.searchQuery])
 
-  // 2. Derived state: Sorted
+  // 3. Derived state: Sorted
   const sortedProjects = useMemo(() => {
     const result = [...filteredProjects]
     
@@ -77,18 +67,40 @@ export function useProjects() {
     return result
   }, [filteredProjects, store.sortBy])
 
-  const totalArchived = store.projects.filter(p => p.status === "archived").length;
-  const totalFavorites = store.projects.filter(p => p.isFavorite).length;
+  const totalArchived = rawProjects.filter(p => p.status === "archived").length;
+  const totalFavorites = rawProjects.filter(p => p.isFavorite).length;
+
+  // 4. Mutations
+  const createMutation = useMutation({
+    mutationFn: ({ title, description, isFavorite }: { title: string, description?: string, isFavorite?: boolean }) => 
+      ProjectsService.createProject(title, description, isFavorite),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => ProjectsService.deleteProject(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => ProjectsService.archiveProject(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+  })
+
+  const favoriteMutation = useMutation({
+    mutationFn: ({ id, isFav }: { id: string, isFav: boolean }) => ProjectsService.toggleFavorite(id, isFav),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+  })
 
   return {
     // Data
     projects: sortedProjects,
-    totalCount: store.projects.length,
-    activeCount: store.projects.length - totalArchived,
+    totalCount: rawProjects.length,
+    activeCount: rawProjects.length - totalArchived,
     archivedCount: totalArchived,
     favoritesCount: totalFavorites,
-    isLoading: store.isLoading,
-    error: store.error,
+    isLoading,
+    error: error instanceof Error ? error.message : error ? "An error occurred" : null,
     
     // View state
     viewMode: store.viewMode,
@@ -105,25 +117,20 @@ export function useProjects() {
     setStatusFilter: store.setStatusFilter,
     setIsFavoriteFilter: store.setIsFavoriteFilter,
     setSortBy: store.setSortBy,
-    refresh: fetchProjects,
+    refresh: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
 
     // Mutations (Optimistic UI ready)
     createProject: async (title: string, description?: string, isFavorite?: boolean) => {
-      const proj = await ProjectsService.createProject(title, description, isFavorite)
-      await fetchProjects()
-      return proj
+      return createMutation.mutateAsync({ title, description, isFavorite })
     },
     deleteProject: async (id: string) => {
-      await ProjectsService.deleteProject(id)
-      await fetchProjects()
+      return deleteMutation.mutateAsync(id)
     },
     archiveProject: async (id: string) => {
-      await ProjectsService.archiveProject(id)
-      await fetchProjects()
+      return archiveMutation.mutateAsync(id)
     },
     toggleFavorite: async (id: string, isFav: boolean) => {
-      await ProjectsService.toggleFavorite(id, isFav)
-      await fetchProjects()
+      return favoriteMutation.mutateAsync({ id, isFav })
     }
   }
 }
