@@ -7,10 +7,12 @@ import { Search } from "../ui/search"
 export function ProjectSearch() {
   const { searchQuery, setSearchQuery } = useProjects()
   const [localValue, setLocalValue] = React.useState(searchQuery)
+  const [prevSearchQuery, setPrevSearchQuery] = React.useState(searchQuery)
 
-  React.useEffect(() => {
+  if (searchQuery !== prevSearchQuery) {
+    setPrevSearchQuery(searchQuery)
     setLocalValue(searchQuery)
-  }, [searchQuery])
+  }
 
   React.useEffect(() => {
     const handler = setTimeout(() => {

@@ -24,19 +24,31 @@ export const ProjectsService = {
       const project = await ProjectsRepository.findById(id);
       if (!project) throw new Error("Project not found");
       return project;
-    } catch (error) {
+    } catch (error: any) {
       console.error("ProjectsService.getProject:", error);
+      if (error?.message === "Project not found") {
+        throw error;
+      }
       throw new Error("Failed to fetch project details");
     }
   },
 
   async createProject(title: string, description?: string, isFavorite?: boolean): Promise<Project> {
     try {
-      const validatedData = CreateProjectSchema.parse({ title, description, isFavorite });
-      return await ProjectsRepository.create({
-        ...validatedData,
+      const { createProjectAction } = await import("../app/actions/ai.actions");
+      const data = await createProjectAction(title, description);
+      
+      // Need to map the data to the Project type since the action returns raw row
+      return {
+        id: data.id,
+        userId: data.user_id,
+        title: data.title,
+        description: data.description,
         status: "active",
-      });
+        isFavorite: false,
+        createdAt: data.created_at,
+        updatedAt: undefined,
+      } as Project;
     } catch (error) {
       console.error("ProjectsService.createProject:", error);
       throw error;

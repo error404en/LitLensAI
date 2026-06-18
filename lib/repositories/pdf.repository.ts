@@ -5,6 +5,7 @@ import {
   PDFAnnotation,
   PDFDocumentMeta,
   PDFSearchResult,
+  HighlightColor,
 } from "../types/pdf";
 import { createClient } from "../supabase/client";
 import { DatabaseError } from "../errors";
@@ -127,8 +128,8 @@ export const PDFRepository = {
       id: h.id,
       paperId: h.paper_id,
       page: h.page_number,
-      text: h.text,
-      color: h.color,
+      text: h.text || "",
+      color: (h.color || "yellow") as HighlightColor,
       position: { startOffset: 0, endOffset: 0 },
       createdAt: h.created_at,
     }));
@@ -158,7 +159,7 @@ export const PDFRepository = {
       page: data.page_number,
       position: highlight.position || { startOffset: 0, endOffset: 0 },
       text: data.text,
-      color: data.color,
+      color: (data.color || "yellow") as HighlightColor,
       createdAt: data.created_at,
     };
   },
@@ -234,9 +235,10 @@ export const PDFRepository = {
       .update({ content, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw new DatabaseError(error.message, error);
+    if (!data) throw new DatabaseError(`Annotation with ID ${id} not found`, undefined);
     return {
       id: data.id,
       paperId: data.paper_id,

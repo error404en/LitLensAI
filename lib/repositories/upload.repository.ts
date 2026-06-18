@@ -14,20 +14,33 @@ export const UploadRepository = {
     // Store File in memory
     fileCache.set(upload.id, upload.file);
 
+    if (!userUUID || userUUID === "null" || userUUID === "undefined") {
+      console.warn("saveUpload: no valid user UUID, skipping DB insert (offline fallback)");
+      return upload;
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isValidUuid = uuidRegex.test(upload.id);
+
+    const insertPayload: Record<string, unknown> = {
+      user_id: userUUID,
+      file_name: upload.fileName,
+      file_size: upload.fileSize,
+      status: upload.status,
+    };
+    
+    if (isValidUuid) {
+      insertPayload.id = upload.id;
+    }
+
     const { data, error } = await supabase
       .from("uploads")
-      .insert({
-        id: upload.id,
-        user_id: userUUID || undefined,
-        file_name: upload.fileName,
-        file_size: upload.fileSize,
-        status: upload.status,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
     if (error) {
-      console.error("Supabase insert error", error);
+      console.error("Supabase insert error", { error, insertPayload, data });
       // We don't throw because the app expects offline-like behavior until sync.
       // But we will throw if it's a real DB.
       // throw new DatabaseError(error.message, error);
@@ -77,6 +90,10 @@ export const UploadRepository = {
     const supabase = createClient();
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
 
+    if (!userUUID || userUUID === "null" || userUUID === "undefined") {
+      return { isDuplicate: false };
+    }
+
     // Check papers table
     const { data: papers, error: papersError } = await supabase
       .from("papers")
@@ -125,26 +142,28 @@ export const UploadRepository = {
       .update(updateData)
       .eq("id", id)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (error) throw new DatabaseError(error.message, error);
+    if (error) {
+      console.error("updateStatus error", error);
+    }
 
     // Return reconstructed object
     const file = fileCache.get(id);
     return {
       id,
       file: file as File,
-      fileName: data.file_name,
-      fileSize: data.file_size,
+      fileName: data?.file_name || file?.name || "Unknown",
+      fileSize: data?.file_size || file?.size || 0,
       mimeType: file?.type || "",
-      status: data.status as UploadStatus,
+      status: (data?.status as UploadStatus) || status,
       progress: extra?.progress ?? 0,
-      error: data.error_message,
+      error: data?.error_message || extra?.error,
       paperId: extra?.paperId,
       projectId: extra?.projectId,
       isDuplicate: extra?.isDuplicate,
       duplicatePaperId: extra?.duplicatePaperId,
-      createdAt: data.created_at,
+      createdAt: data?.created_at || new Date().toISOString(),
       completedAt: extra?.completedAt,
     };
   },

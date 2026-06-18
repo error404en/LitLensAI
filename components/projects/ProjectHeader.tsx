@@ -33,6 +33,12 @@ export function ProjectHeader({ project }: { project: Project }) {
             <Heart className={`h-5 w-5 transition-colors ${project.isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
           </button>
           <button 
+            onClick={async () => {
+              const newTitle = prompt("Enter new project title:", project.title)
+              if (newTitle && newTitle !== project.title) {
+                await updateProject({ title: newTitle })
+              }
+            }}
             className="rounded-md p-1.5 hover:bg-accent text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Rename project"
           >

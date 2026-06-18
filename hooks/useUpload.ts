@@ -18,7 +18,7 @@ export function useUpload() {
       for (const file of fileArray) {
         // Validate first
         const validation = UploadService.validateFile(file);
-        const uploadId = `upload_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const uploadId = crypto.randomUUID();
 
         if (!validation.success) {
           // Add as failed immediately
@@ -76,7 +76,8 @@ export function useUpload() {
             file,
             undefined,
             (pct) => store.updateUpload(uploadId, { progress: pct }),
-            (status) => store.updateUpload(uploadId, { status })
+            (status) => store.updateUpload(uploadId, { status }),
+            uploadId
           );
           store.updateUpload(uploadId, {
             status: "completed",

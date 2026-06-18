@@ -1,5 +1,6 @@
 import { AIProvider } from "./ai-provider.interface";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
+import { Message } from "../prompt/prompt-builder";
 
 export class OpenAIProvider implements AIProvider {
   private chatModel: ChatOpenAI;
@@ -17,7 +18,8 @@ export class OpenAIProvider implements AIProvider {
   }
 
   async generate(messages: Message[]): Promise<string> {
-    const response = await this.chatModel.invoke(messages);
+    const langchainMessages = messages.map(m => [m.role, m.content] as [string, string]);
+    const response = await this.chatModel.invoke(langchainMessages);
     return response.content.toString();
   }
 
@@ -30,7 +32,8 @@ export class OpenAIProvider implements AIProvider {
   }
 
   async *stream(messages: Message[]): AsyncIterable<string> {
-    const stream = await this.chatModel.stream(messages);
+    const langchainMessages = messages.map(m => [m.role, m.content] as [string, string]);
+    const stream = await this.chatModel.stream(langchainMessages);
     for await (const chunk of stream) {
       yield chunk.content.toString();
     }

@@ -19,14 +19,15 @@ export function useChat() {
     }
   }, [store]);
 
+  const setMessages = store.setMessages;
   // Load messages when conversation changes
   useEffect(() => {
     if (store.selectedConversationId) {
       loadMessages(store.selectedConversationId);
     } else {
-      store.setMessages([]);
+      setMessages([]);
     }
-  }, [store.selectedConversationId, loadMessages]);
+  }, [store.selectedConversationId, loadMessages, setMessages]);
 
   const sendMessage = useCallback(async (content: string) => {
     const convId = store.selectedConversationId;

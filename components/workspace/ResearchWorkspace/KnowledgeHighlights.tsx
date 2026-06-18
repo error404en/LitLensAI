@@ -1,5 +1,5 @@
 import { Lightbulb, Pin, Bookmark } from "lucide-react";
-import { useWorkspaceStore } from "../../../../stores/workspace.store";
+import { useWorkspaceStore } from "../../../stores/workspace.store";
 
 export function KnowledgeHighlights() {
   const { pinnedInsights: _pinnedInsights } = useWorkspaceStore();

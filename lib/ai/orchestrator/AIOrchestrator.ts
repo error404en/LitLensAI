@@ -82,9 +82,9 @@ export class AIOrchestrator {
 
       // 5. Build Unified Context & Prompt
       const structuredContext = this.contextBuilder.build({
-        selectedText: context.selection,
+        selectedText: context.selection?.text,
         retrievedChunks: retrievedChunks,
-        conversationHistory: context.history,
+        conversationHistory: context.conversation?.history,
       });
 
       const messages = this.promptBuilder.buildMessages(
@@ -130,7 +130,8 @@ export class AIOrchestrator {
     } catch (error: unknown) {
       // Log Failure
       const duration = Date.now() - startTime;
-      await AIExecutionRepository.updateStatus(execution.id, "failed", duration, error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await AIExecutionRepository.updateStatus(execution.id, "failed", duration, errorMessage);
       throw error;
     }
   }

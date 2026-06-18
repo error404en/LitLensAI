@@ -25,8 +25,7 @@ export const RetrieverRepository = {
     const { data, error } = await adminClient
       .from("papers")
       .select("id")
-      .eq("project_id", projectId)
-      .is("deleted_at", null);
+      .eq("project_id", projectId);
 
     if (error) throw error;
     return data.map(d => d.id);

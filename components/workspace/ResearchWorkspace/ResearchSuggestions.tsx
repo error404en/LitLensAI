@@ -1,6 +1,6 @@
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { SuggestionService } from "../../../../services/suggestion.service";
+import { SuggestionService } from "../../../services/suggestion.service";
 
 interface ResearchSuggestionsProps {
   projectId: string;

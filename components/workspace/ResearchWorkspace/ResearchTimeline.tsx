@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { Activity, FileUp, FileCheck, Search, MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { TimelineService } from "../../../../services/timeline.service";
+import { TimelineService } from "../../../services/timeline.service";
 // unused
 
 interface ResearchTimelineProps {

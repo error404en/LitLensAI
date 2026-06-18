@@ -37,7 +37,7 @@ export interface Paper {
   readonly isFavorite?: boolean;
   readonly embeddingCreated?: boolean;
   readonly createdAt: string;
-  readonly updatedAt: string;
+  readonly updatedAt?: string;
 }
 
 export interface Project {
@@ -49,7 +49,7 @@ export interface Project {
   readonly isFavorite?: boolean;
   readonly stats?: ProjectStats;
   readonly createdAt: string;
-  readonly updatedAt: string;
+  readonly updatedAt?: string;
 }
 
 export interface ProjectStats {

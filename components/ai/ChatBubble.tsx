@@ -16,7 +16,7 @@ export function ChatBubble({ content, role, citations }: ChatBubbleProps) {
   // Extremely basic markdown parser for paragraphs, bold, and mock citations
   // In a full implementation, use 'react-markdown' or 'marked'.
   const renderContent = () => {
-    let text = content;
+    const text = content;
     
     // Split into paragraphs
     const paragraphs = text.split("\n\n").map((p, i) => {
@@ -38,6 +38,8 @@ export function ChatBubble({ content, role, citations }: ChatBubbleProps) {
     return paragraphs;
   };
 
+  const text = isUser ? content : renderContent();
+
   return (
     <div
       className={cn(
@@ -46,7 +48,7 @@ export function ChatBubble({ content, role, citations }: ChatBubbleProps) {
         isError && "bg-destructive/10 text-destructive border border-destructive/20"
       )}
     >
-      {renderContent()}
+      {text}
       
       {citations && citations.length > 0 && (
         <div className="mt-3 pt-3 border-t border-border/50 space-y-1">

@@ -1,4 +1,7 @@
 import { StructuredContext } from "../context/context-builder";
+import { Message } from "../../repositories/conversation.repository";
+
+export type { Message };
 
 export class PromptBuilder {
   /**

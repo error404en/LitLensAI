@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { usePaperStore } from "../stores/paper.store"
 import { PapersService } from "../services/papers.service"
 
@@ -118,5 +118,19 @@ export function usePapers(projectId?: string) {
     setSortBy: store.setSortBy,
     setCurrentPage: store.setCurrentPage,
     refresh: () => queryClient.invalidateQueries({ queryKey: ["papers"] }),
+
+    // Mutations
+    deletePaper: async (id: string) => {
+      await PapersService.deletePaper(id)
+      queryClient.invalidateQueries({ queryKey: ["papers"] })
+    },
+    toggleFavorite: async (id: string, isFavorite: boolean) => {
+      await PapersService.updatePaper(id, { isFavorite })
+      queryClient.invalidateQueries({ queryKey: ["papers"] })
+    },
+    renamePaper: async (id: string, title: string) => {
+      await PapersService.updatePaper(id, { title })
+      queryClient.invalidateQueries({ queryKey: ["papers"] })
+    }
   }
 }

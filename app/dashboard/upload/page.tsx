@@ -12,7 +12,10 @@ import { UploadError } from "../../../components/upload/UploadError";
 import { UploadEmpty } from "../../../components/upload/UploadEmpty";
 import { DuplicateDialog } from "../../../components/upload/DuplicateDialog";
 
+import { useRouter } from "next/navigation";
+
 export default function UploadPage() {
+  const router = useRouter();
   const {
     uploads,
     summary,
@@ -45,11 +48,9 @@ export default function UploadPage() {
   );
 
   // Auto-show duplicate dialog
-  React.useEffect(() => {
-    if (pendingDuplicates.length > 0 && !activeDuplicate) {
-      setActiveDuplicate(pendingDuplicates[0].id);
-    }
-  }, [pendingDuplicates, activeDuplicate]);
+  if (pendingDuplicates.length > 0 && !activeDuplicate) {
+    setActiveDuplicate(pendingDuplicates[0].id);
+  }
 
   // Active queue items (non-completed, non-cancelled)
   const activeQueue = React.useMemo(
@@ -107,7 +108,7 @@ export default function UploadPage() {
                 <UploadSuccess
                   key={u.id}
                   upload={u}
-                  onViewPaper={() => console.log("View paper:", u.paperId)}
+                  onViewPaper={() => router.push(`/dashboard/papers/${u.paperId || u.id}`)}
                   onAddToProject={() => console.log("Add to project:", u.paperId)}
                   onUploadMore={() => browseRef.current?.click()}
                 />

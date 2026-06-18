@@ -42,7 +42,7 @@ export class AIOperationsService {
     return this.executeTask("Summarize", { // or create an Explain feature mapping
       userId,
       query: "Explain this selection",
-      selection
+      selection: { text: selection }
     });
   }
 

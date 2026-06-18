@@ -11,6 +11,7 @@ import { PDFRightSidebar } from "../../../../components/pdf/PDFRightSidebar";
 import { PDFViewer } from "../../../../components/pdf/PDFViewer";
 import { PDFStatusBar } from "../../../../components/pdf/PDFStatusBar";
 import { PDFLoading } from "../../../../components/pdf/PDFLoading";
+import { PDFEmpty } from "../../../../components/pdf/PDFEmpty";
 import { PDFError } from "../../../../components/pdf/PDFError";
 import { PDFSelectionMenu } from "../../../../components/pdf/PDFSelectionMenu";
 import { PDFSidebarTab, RightSidebarTab } from "../../../../lib/types/pdf";
@@ -75,8 +76,19 @@ export default function PDFWorkspacePage({ params }: { params: Promise<{ id: str
     return <PDFLoading />;
   }
 
-  if (pdfError || !paper) {
-    return <PDFError message={pdfError || "Paper not found"} />;
+  if (pdfError) {
+    return <PDFError message={pdfError} />;
+  }
+
+  if (!paper) {
+    return (
+      <div className="flex flex-col h-full bg-background relative items-center justify-center">
+        <PDFEmpty />
+        <Link href="/dashboard/papers" className="mt-4">
+          <Button variant="outline">Back to Library</Button>
+        </Link>
+      </div>
+    );
   }
 
   return (

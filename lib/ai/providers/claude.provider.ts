@@ -11,7 +11,11 @@ export class ClaudeProvider implements AIProvider {
     throw new Error("ClaudeProvider is a placeholder and not yet implemented.");
   }
 
-  async stream(messages: Message[]): Promise<AsyncIterable<string>> {
+  async embedBatch(texts: string[]): Promise<number[][]> {
+    throw new Error("ClaudeProvider is a placeholder and not yet implemented.");
+  }
+
+  async *stream(messages: Message[]): AsyncIterable<string> {
     throw new Error("ClaudeProvider is a placeholder and not yet implemented.");
   }
 

@@ -7,8 +7,19 @@ export function createClient() {
     {
       global: {
         fetch: async (url, options = {}) => {
-          // @ts-expect-error - Next.js internal type missing occasionally in dev
-          const clerkToken = await window.Clerk?.session?.getToken({ template: 'supabase' });
+          let clerkToken = null;
+          try {
+            // Wait for Clerk to load if it hasn't (up to 2 seconds)
+            let retries = 20;
+            while (!window.Clerk?.session && retries > 0) {
+              await new Promise(r => setTimeout(r, 100));
+              retries--;
+            }
+            // @ts-expect-error - Next.js internal type missing occasionally in dev
+            clerkToken = await window.Clerk?.session?.getToken({ template: 'supabase' });
+          } catch (e) {
+            console.error("Clerk JWT fetch failed:", e);
+          }
           const headers = new Headers(options?.headers);
           if (clerkToken) {
             headers.set('Authorization', `Bearer ${clerkToken}`);

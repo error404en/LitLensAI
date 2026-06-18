@@ -4,7 +4,7 @@
 -- CREATE EXTENSION IF NOT EXISTS vector;
 
 -- 1. Pipeline Jobs
-CREATE TABLE IF NOT EXISTS public.pipeline_jobs (
+CREATE TABLE IF NOT EXISTS IF NOT EXISTS public.pipeline_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     paper_id UUID NOT NULL REFERENCES public.papers(id) ON DELETE CASCADE,
     status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'chunking', 'embedding', 'completed', 'failed', 'cancelled')),
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.pipeline_jobs (
 );
 
 -- 2. Processing Logs
-CREATE TABLE IF NOT EXISTS public.processing_logs (
+CREATE TABLE IF NOT EXISTS IF NOT EXISTS public.processing_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     job_id UUID NOT NULL REFERENCES public.pipeline_jobs(id) ON DELETE CASCADE,
     step TEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.processing_logs (
 );
 
 -- 3. Paper Chunks
-CREATE TABLE IF NOT EXISTS public.paper_chunks (
+CREATE TABLE IF NOT EXISTS IF NOT EXISTS public.paper_chunks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     paper_id UUID NOT NULL REFERENCES public.papers(id) ON DELETE CASCADE,
     page_number INTEGER NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS public.paper_chunks (
 
 -- 4. Vector Metadata
 -- Links postgres chunks to Qdrant UUIDs
-CREATE TABLE IF NOT EXISTS public.vector_metadata (
+CREATE TABLE IF NOT EXISTS IF NOT EXISTS public.vector_metadata (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     paper_id UUID NOT NULL REFERENCES public.papers(id) ON DELETE CASCADE,
     chunk_id UUID NOT NULL REFERENCES public.paper_chunks(id) ON DELETE CASCADE,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS public.vector_metadata (
 -- but we create it here just to satisfy the explicit database schema requirement if not using pgvector.
 -- In our setup, Qdrant handles the actual vector. 
 -- Wait, the prompt says "Create tables: paper_chunks, embeddings...". Let's create an embeddings table just in case they meant for pgvector.
-CREATE TABLE IF NOT EXISTS public.embeddings (
+CREATE TABLE IF NOT EXISTS IF NOT EXISTS public.embeddings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     chunk_id UUID NOT NULL REFERENCES public.paper_chunks(id) ON DELETE CASCADE,
     -- vector column would go here if using pgvector: embedding vector(1536)
@@ -55,11 +55,11 @@ CREATE TABLE IF NOT EXISTS public.embeddings (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_pipeline_jobs_paper_id ON public.pipeline_jobs(paper_id);
-CREATE INDEX IF NOT EXISTS idx_pipeline_jobs_status ON public.pipeline_jobs(status);
-CREATE INDEX IF NOT EXISTS idx_paper_chunks_paper_id ON public.paper_chunks(paper_id);
-CREATE INDEX IF NOT EXISTS idx_vector_metadata_paper_id ON public.vector_metadata(paper_id);
-CREATE INDEX IF NOT EXISTS idx_vector_metadata_chunk_id ON public.vector_metadata(chunk_id);
+CREATE INDEX IF NOT EXISTS IF NOT EXISTS idx_pipeline_jobs_paper_id ON public.pipeline_jobs(paper_id);
+CREATE INDEX IF NOT EXISTS IF NOT EXISTS idx_pipeline_jobs_status ON public.pipeline_jobs(status);
+CREATE INDEX IF NOT EXISTS IF NOT EXISTS idx_paper_chunks_paper_id ON public.paper_chunks(paper_id);
+CREATE INDEX IF NOT EXISTS IF NOT EXISTS idx_vector_metadata_paper_id ON public.vector_metadata(paper_id);
+CREATE INDEX IF NOT EXISTS IF NOT EXISTS idx_vector_metadata_chunk_id ON public.vector_metadata(chunk_id);
 
 -- RLS (Restrict to server-side only for these tables to prevent frontend exposure)
 ALTER TABLE public.pipeline_jobs ENABLE ROW LEVEL SECURITY;

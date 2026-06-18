@@ -33,12 +33,14 @@ export function CreateProjectDialog({ isOpen, onClose, onSubmit }: CreateProject
   })
 
   // Reset state when opened
-  React.useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = React.useState(isOpen)
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen)
     if (isOpen) {
       reset()
       setError(null)
     }
-  }, [isOpen, reset])
+  }
 
   const onFormSubmit = async (data: CreateProjectFormValues) => {
     setError(null)

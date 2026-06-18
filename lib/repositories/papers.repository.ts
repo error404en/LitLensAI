@@ -22,7 +22,7 @@ export interface PaperRow {
   embedding_created: boolean;
   uploaded_at: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 function mapPaper(row: PaperRow): Paper {
@@ -55,8 +55,7 @@ export const PapersRepository = {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("papers")
-      .select("*")
-      .is("deleted_at", null)
+      .select("id, project_id, user_id, title, authors, abstract, year, journal, tags, status, summary, file_url, file_name, file_size, mime_type, is_favorite, embedding_created, uploaded_at, created_at")
       .order("created_at", { ascending: false });
 
     if (error) throw new DatabaseError(error.message, error);
@@ -67,9 +66,8 @@ export const PapersRepository = {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("papers")
-      .select("*")
+      .select("id, project_id, user_id, title, authors, abstract, year, journal, tags, status, summary, file_url, file_name, file_size, mime_type, is_favorite, embedding_created, uploaded_at, created_at")
       .eq("id", id)
-      .is("deleted_at", null)
       .single();
 
     if (error) {
@@ -83,9 +81,8 @@ export const PapersRepository = {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("papers")
-      .select("*")
+      .select("id, project_id, user_id, title, authors, abstract, year, journal, tags, status, summary, file_url, file_name, file_size, mime_type, is_favorite, embedding_created, uploaded_at, created_at")
       .eq("project_id", projectId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (error) throw new DatabaseError(error.message, error);
@@ -96,11 +93,15 @@ export const PapersRepository = {
     const supabase = createClient();
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
 
+    if (!userUUID || userUUID === "null" || userUUID === "undefined") {
+      throw new DatabaseError("User not authenticated or user mapping missing", undefined);
+    }
+
     const { data, error } = await supabase
       .from("papers")
       .insert({
         project_id: paper.projectId,
-        user_id: userUUID || undefined,
+        user_id: userUUID,
         title: paper.title,
         authors: paper.authors,
         abstract: paper.abstract,
@@ -116,7 +117,7 @@ export const PapersRepository = {
         is_favorite: paper.isFavorite || false,
         embedding_created: paper.embeddingCreated || false,
       })
-      .select()
+      .select("id, project_id, user_id, title, authors, abstract, year, journal, tags, status, summary, file_url, file_name, file_size, mime_type, is_favorite, embedding_created, uploaded_at, created_at")
       .single();
 
     if (error) throw new DatabaseError(error.message, error);
@@ -146,10 +147,11 @@ export const PapersRepository = {
       .from("papers")
       .update(updateData)
       .eq("id", id)
-      .select()
-      .single();
+      .select("id, project_id, user_id, title, authors, abstract, year, journal, tags, status, summary, file_url, file_name, file_size, mime_type, is_favorite, embedding_created, uploaded_at, created_at")
+      .maybeSingle();
 
     if (error) throw new DatabaseError(error.message, error);
+    if (!data) throw new DatabaseError(`Paper with ID ${id} not found`, undefined);
     return mapPaper(data);
   },
 
@@ -157,7 +159,7 @@ export const PapersRepository = {
     const supabase = createClient();
     const { error } = await supabase
       .from("papers")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("id", id);
 
     if (error) throw new DatabaseError(error.message, error);

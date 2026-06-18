@@ -55,9 +55,10 @@ export const UploadService = {
     file: File,
     projectId: string | undefined,
     onProgress: (percentage: number) => void,
-    onStatusChange: (status: UploadStatus) => void
+    onStatusChange: (status: UploadStatus) => void,
+    providedUploadId?: string
   ): Promise<UploadFile> {
-    const uploadId = `upload_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const uploadId = providedUploadId || crypto.randomUUID();
 
     // Create initial record
     const uploadRecord: UploadFile = {
@@ -72,7 +73,11 @@ export const UploadService = {
       createdAt: new Date().toISOString(),
     };
 
-    await UploadRepository.saveUpload(uploadRecord);
+    try {
+      await UploadRepository.saveUpload(uploadRecord);
+    } catch (e) {
+      console.warn("Initial save failed, proceeding with cache", e);
+    }
 
     // Step 1: Validate
     onStatusChange("validating");
@@ -175,7 +180,8 @@ export const UploadService = {
           files[i],
           projectId,
           (pct) => onFileProgress(i, pct),
-          (status) => onFileStatusChange(i, status)
+          (status) => onFileStatusChange(i, status),
+          undefined
         );
         results.push(result);
       } catch (error) {
@@ -213,7 +219,7 @@ export const UploadService = {
     await UploadRepository.updateStatus(id, "queued", { progress: 0, error: undefined });
     onStatusChange("queued");
 
-    return this.uploadFile(upload.file, upload.projectId, onProgress, onStatusChange);
+    return this.uploadFile(upload.file, upload.projectId, onProgress, onStatusChange, id);
   },
 
   /**

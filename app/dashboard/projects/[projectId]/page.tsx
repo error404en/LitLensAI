@@ -11,11 +11,28 @@ import { ErrorState } from "../../../../components/ui/error-state"
 import { Loading } from "../../../../components/ui/loading"
 
 import { ProjectNotesEditor } from "../../../../components/projects/ProjectNotesEditor"
+import { useSearchParams, useRouter } from "next/navigation"
 
 export default function SingleProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
   const unwrappedParams = React.use(params)
   const { project, isLoading, error, refresh } = useProject(unwrappedParams.projectId)
-  const [activeTab, setActiveTab] = React.useState("overview")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
+  const defaultTab = searchParams.get('tab') || "overview"
+  const [activeTab, setActiveTab] = React.useState(defaultTab)
+
+  React.useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    router.replace(`/dashboard/projects/${unwrappedParams.projectId}?tab=${tabId}`)
+  }
 
   if (isLoading && !project) {
     return (
@@ -42,7 +59,7 @@ export default function SingleProjectPage({ params }: { params: Promise<{ projec
       <ProjectHeader project={project} />
       
       <div className="px-4 sm:px-8 border-b border-border">
-        <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <ProjectTabs activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">

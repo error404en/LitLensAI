@@ -8,6 +8,7 @@ import { QdrantRepository } from "../lib/ai/vector/qdrant.client";
 import { adminClient } from "../lib/supabase/admin";
 import { PapersRepository } from "../lib/repositories/papers.repository";
 import { v4 as uuidv4 } from "uuid";
+import { Message } from "../lib/repositories/conversation.repository";
 
 export class AIPipelineService {
   private pipelineRepo = PipelineRepository;
@@ -140,9 +141,9 @@ Format as JSON:
 }`;
     
     try {
-      const messages = [
-        { role: "system", content: "You are a helpful research assistant. Return ONLY JSON." },
-        { role: "user", content: prompt }
+      const messages: Message[] = [
+        { role: "system" as const, content: "You are a helpful research assistant. Return ONLY JSON." },
+        { role: "user" as const, content: prompt }
       ];
       const response = await this.aiProvider.generate(messages);
       const cleaned = response.replace(/```json/g, "").replace(/```/g, "").trim();

@@ -7,10 +7,8 @@ export interface ProjectRow {
   user_id: string;
   title: string;
   description?: string;
-  status: ProjectStatus;
-  is_favorite: boolean;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface ActivityRow {
@@ -27,8 +25,8 @@ function mapProject(row: ProjectRow): Project {
     userId: row.user_id,
     title: row.title,
     description: row.description,
-    status: row.status,
-    isFavorite: row.is_favorite,
+    status: "active" as ProjectStatus,
+    isFavorite: false,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -49,8 +47,7 @@ export const ProjectsRepository = {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("projects")
-      .select("*")
-      .is("deleted_at", null)
+      .select("id, user_id, title, description, created_at")
       .order("created_at", { ascending: false });
 
     if (error) throw new DatabaseError(error.message, error);
@@ -61,15 +58,15 @@ export const ProjectsRepository = {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("projects")
-      .select("*")
+      .select("id, user_id, title, description, created_at")
       .eq("id", id)
-      .is("deleted_at", null)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') return null; // Not found
       throw new DatabaseError(error.message, error);
     }
+    if (!data) return null;
     return mapProject(data);
   },
 
@@ -84,16 +81,18 @@ export const ProjectsRepository = {
     // Let's fetch the current user UUID.
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
 
+    if (!userUUID) {
+      throw new DatabaseError("User not authenticated or user mapping missing", undefined);
+    }
+
     const { data, error } = await supabase
       .from("projects")
       .insert({
-        user_id: userUUID || undefined, // Supabase will fail if null, but maybe RLS allows inserting clerk_id?
+        user_id: userUUID,
         title: project.title,
         description: project.description,
-        status: project.status,
-        is_favorite: project.isFavorite || false,
       })
-      .select()
+      .select("id, user_id, title, description, created_at")
       .single();
 
     if (error) throw new DatabaseError(error.message, error);
@@ -112,21 +111,22 @@ export const ProjectsRepository = {
 
   async update(id: string, updates: Partial<Omit<Project, "id" | "createdAt" | "updatedAt" | "userId">>): Promise<Project> {
     const supabase = createClient();
+    const { data: userUUID } = await supabase.rpc('get_current_user_id');
     
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.description !== undefined) updateData.description = updates.description;
-    if (updates.status !== undefined) updateData.status = updates.status;
-    if (updates.isFavorite !== undefined) updateData.is_favorite = updates.isFavorite;
 
     const { data, error } = await supabase
       .from("projects")
       .update(updateData)
       .eq("id", id)
-      .select()
-      .single();
+      .eq("user_id", userUUID)
+      .select("id, user_id, title, description, created_at")
+      .maybeSingle();
 
     if (error) throw new DatabaseError(error.message, error);
+    if (!data) throw new DatabaseError(`Project with ID ${id} not found`, undefined);
     return mapProject(data);
   },
 
@@ -134,7 +134,7 @@ export const ProjectsRepository = {
     const supabase = createClient();
     const { error } = await supabase
       .from("projects")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("id", id);
 
     if (error) throw new DatabaseError(error.message, error);

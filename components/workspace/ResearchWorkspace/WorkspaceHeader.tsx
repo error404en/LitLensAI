@@ -1,6 +1,6 @@
 import { Search, Settings, HelpCircle, Download } from "lucide-react";
-import { useWorkspaceStore } from "../../../../stores/workspace.store";
-import { Project } from "../../../../lib/types";
+import { useWorkspaceStore } from "../../../stores/workspace.store";
+import { Project } from "../../../lib/types";
 
 interface WorkspaceHeaderProps {
   project: Project | undefined;

@@ -10,28 +10,46 @@ export function ProjectNotesEditor({ project }: { project: Project }) {
   const [content, setContent] = React.useState("")
   const [isSaving, setIsSaving] = React.useState(false)
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null)
+  const [prevTitle, setPrevTitle] = React.useState(project.title)
+  const isMounted = React.useRef(false)
 
-  // Load mock data
+  // Load from local storage
   React.useEffect(() => {
-    setContent(`# ${project.title} Notes\n\nBegin typing here...`)
-  }, [project.title])
+    const saved = localStorage.getItem(`project_notes_${project.id}`)
+    if (saved) {
+      setContent(saved)
+    } else {
+      setContent(`# ${project.title} Notes\n\nBegin typing here...`)
+    }
+    isMounted.current = true
+  }, [project.id, project.title])
 
-  // Mock autosave
+  // Autosave
   React.useEffect(() => {
-    if (!content) return
+    if (!isMounted.current) return
     const handler = setTimeout(() => {
       setIsSaving(true)
-      // Simulate save delay
-      setTimeout(() => {
-        setIsSaving(false)
-        setLastSaved(new Date())
-      }, 500)
-    }, 1500)
+      localStorage.setItem(`project_notes_${project.id}`, content)
+      setIsSaving(false)
+      setLastSaved(new Date())
+    }, 1000)
     return () => clearTimeout(handler)
-  }, [content])
+  }, [content, project.id])
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0
   const charCount = content.length
+
+  const handleExport = () => {
+    const blob = new Blob([content], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${project.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="flex flex-col h-full bg-background rounded-lg border border-border shadow-sm overflow-hidden">
@@ -57,6 +75,7 @@ export function ProjectNotesEditor({ project }: { project: Project }) {
           <span>{wordCount} words</span>
           <span className="hidden sm:inline-block">{charCount} characters</span>
           <button 
+            onClick={handleExport}
             className="ml-2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Export notes"
             title="Export as Markdown"

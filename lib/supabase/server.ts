@@ -12,7 +12,12 @@ export async function createClient() {
     {
       global: {
         fetch: async (url, options = {}) => {
-          const clerkToken = await getToken({ template: 'supabase' });
+          let clerkToken = null;
+          try {
+            clerkToken = await getToken({ template: 'supabase' });
+          } catch (e) {
+            console.warn("Clerk JWT Template 'supabase' not found. Please create it in the Clerk Dashboard.");
+          }
           const headers = new Headers(options?.headers);
           if (clerkToken) {
             headers.set('Authorization', `Bearer ${clerkToken}`);

@@ -12,7 +12,7 @@ export class StreamingManager {
       }
       yield { type: "complete" };
     } catch (error: unknown) {
-      yield { type: "error", error: error.message };
+      yield { type: "error", error: error instanceof Error ? error.message : String(error) };
     }
   }
 

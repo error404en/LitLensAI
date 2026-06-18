@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, PlayCircle, Trash2, Star } from "lucide-react";
-import { useRecentSessions } from "../../../../hooks/useRecentSessions";
+import { useRecentSessions } from "../../../hooks/useRecentSessions";
 
 interface RecentSessionsProps {
   projectId: string;

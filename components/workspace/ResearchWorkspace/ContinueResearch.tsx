@@ -1,5 +1,5 @@
 import { BookOpen, Edit3, Archive } from "lucide-react";
-import { useActionCenter } from "../../../../hooks/useActionCenter";
+import { useActionCenter } from "../../../hooks/useActionCenter";
 
 interface ContinueResearchProps {
   projectId: string;

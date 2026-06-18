@@ -9,7 +9,7 @@ export const PipelineRepository = {
       .from("pipeline_jobs")
       .select("id")
       .eq("paper_id", paperId)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       await supabase
@@ -30,7 +30,7 @@ export const PipelineRepository = {
       .from("pipeline_jobs")
       .select("id")
       .eq("paper_id", paperId)
-      .single();
+      .maybeSingle();
 
     if (job) {
       await supabase

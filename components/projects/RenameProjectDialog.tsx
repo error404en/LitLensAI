@@ -23,8 +23,7 @@ export function RenameProjectDialog({ isOpen, onClose, onRename, currentName }: 
     register,
     handleSubmit,
     reset,
-    watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<RenameProjectFormValues>({
     resolver: zodResolver(RenameProjectSchema),
     defaultValues: { title: currentName },
@@ -35,8 +34,6 @@ export function RenameProjectDialog({ isOpen, onClose, onRename, currentName }: 
       reset({ title: currentName })
     }
   }, [isOpen, currentName, reset])
-
-  const name = watch("title")
 
   const onFormSubmit = async (data: RenameProjectFormValues) => {
     if (!data.title.trim() || data.title === currentName) return
@@ -65,7 +62,7 @@ export function RenameProjectDialog({ isOpen, onClose, onRename, currentName }: 
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
-          <Button type="submit" disabled={isSubmitting || !name?.trim() || name === currentName}>
+          <Button type="submit" disabled={isSubmitting || !isDirty || !isValid}>
             {isSubmitting ? "Renaming..." : "Rename"}
           </Button>
         </div>

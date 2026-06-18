@@ -7,10 +7,12 @@ import { Search } from "../ui/search"
 export function PaperSearch() {
   const { searchQuery, setSearchQuery } = usePapers()
   const [localValue, setLocalValue] = React.useState(searchQuery)
+  const [prevSearchQuery, setPrevSearchQuery] = React.useState(searchQuery)
 
-  React.useEffect(() => {
+  if (searchQuery !== prevSearchQuery) {
+    setPrevSearchQuery(searchQuery)
     setLocalValue(searchQuery)
-  }, [searchQuery])
+  }
 
   // Debounce the search
   React.useEffect(() => {

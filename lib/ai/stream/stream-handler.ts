@@ -19,7 +19,8 @@ export class StreamHandler {
       
       yield { type: "complete" };
     } catch (error: unknown) {
-      yield { type: "error", error: error.message || "Streaming failed" };
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      yield { type: "error", error: errorMessage || "Streaming failed" };
     }
   }
 

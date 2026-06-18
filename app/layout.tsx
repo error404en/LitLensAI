@@ -31,7 +31,6 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <QueryProvider>
-        <GlobalRealtime />
         <html lang="en" className="dark scroll-smooth">
         <head>
           {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -48,6 +47,7 @@ export default function RootLayout({
         <body
           className={`${inter.variable} ${geist.variable} bg-background text-on-surface font-body-md text-body-md antialiased overflow-x-hidden min-h-screen`}
         >
+          <GlobalRealtime />
           {children}
         </body>
       </html>

@@ -1,6 +1,6 @@
 import { Pin, ArrowRight } from "lucide-react";
-import { useWorkspaceStore } from "../../../../stores/workspace.store";
-import { useInsights } from "../../../../hooks/useInsights";
+import { useWorkspaceStore } from "../../../stores/workspace.store";
+import { useInsights } from "../../../hooks/useInsights";
 
 interface PinnedInsightsProps {
   projectId: string;

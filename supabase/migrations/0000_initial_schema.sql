@@ -1,5 +1,5 @@
 -- Users Table (Synced with Clerk)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_id TEXT UNIQUE NOT NULL,
   email TEXT NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE users (
 );
 
 -- Projects Table
-CREATE TABLE projects (
+CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE projects (
 );
 
 -- Papers Table
-CREATE TABLE papers (
+CREATE TABLE IF NOT EXISTS papers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -46,7 +46,7 @@ CREATE TABLE papers (
 );
 
 -- Uploads Table (Tracking upload jobs)
-CREATE TABLE uploads (
+CREATE TABLE IF NOT EXISTS uploads (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   file_name TEXT NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE uploads (
 );
 
 -- Annotations Table
-CREATE TABLE annotations (
+CREATE TABLE IF NOT EXISTS annotations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -71,7 +71,7 @@ CREATE TABLE annotations (
 );
 
 -- Highlights Table
-CREATE TABLE highlights (
+CREATE TABLE IF NOT EXISTS highlights (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -83,7 +83,7 @@ CREATE TABLE highlights (
 );
 
 -- Notes Table (Project-level notes)
-CREATE TABLE notes (
+CREATE TABLE IF NOT EXISTS notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -94,7 +94,7 @@ CREATE TABLE notes (
 );
 
 -- Bookmarks Table
-CREATE TABLE bookmarks (
+CREATE TABLE IF NOT EXISTS bookmarks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
@@ -102,7 +102,7 @@ CREATE TABLE bookmarks (
 );
 
 -- Conversations Table
-CREATE TABLE conversations (
+CREATE TABLE IF NOT EXISTS conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   paper_id UUID REFERENCES papers(id) ON DELETE CASCADE,
   project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
@@ -114,7 +114,7 @@ CREATE TABLE conversations (
 );
 
 -- Messages Table
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -125,7 +125,7 @@ CREATE TABLE messages (
 );
 
 -- Reviews Table
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -137,7 +137,7 @@ CREATE TABLE reviews (
 );
 
 -- Comparisons Table
-CREATE TABLE comparisons (
+CREATE TABLE IF NOT EXISTS comparisons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -150,7 +150,7 @@ CREATE TABLE comparisons (
 );
 
 -- Activities Table
-CREATE TABLE activities (
+CREATE TABLE IF NOT EXISTS activities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -160,7 +160,7 @@ CREATE TABLE activities (
 );
 
 -- User Preferences Table
-CREATE TABLE user_preferences (
+CREATE TABLE IF NOT EXISTS user_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   theme TEXT DEFAULT 'system',
@@ -170,12 +170,12 @@ CREATE TABLE user_preferences (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_projects_user_id ON projects(user_id);
-CREATE INDEX idx_papers_project_id ON papers(project_id);
-CREATE INDEX idx_papers_user_id ON papers(user_id);
-CREATE INDEX idx_annotations_paper_id ON annotations(paper_id);
-CREATE INDEX idx_highlights_paper_id ON highlights(paper_id);
-CREATE INDEX idx_conversations_paper_id ON conversations(paper_id);
-CREATE INDEX idx_conversations_project_id ON conversations(project_id);
-CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
-CREATE INDEX idx_activities_project_id ON activities(project_id);
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_papers_project_id ON papers(project_id);
+CREATE INDEX IF NOT EXISTS idx_papers_user_id ON papers(user_id);
+CREATE INDEX IF NOT EXISTS idx_annotations_paper_id ON annotations(paper_id);
+CREATE INDEX IF NOT EXISTS idx_highlights_paper_id ON highlights(paper_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_paper_id ON conversations(paper_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_project_id ON conversations(project_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_activities_project_id ON activities(project_id);

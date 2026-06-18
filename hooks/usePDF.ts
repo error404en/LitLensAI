@@ -29,10 +29,11 @@ export function usePDF(paperId: string) {
     }
   }, [paperId, store]);
 
+  const reset = store.reset;
   useEffect(() => {
     loadDocument();
-    return () => store.reset();
-  }, [loadDocument]);
+    return () => reset();
+  }, [loadDocument, reset]);
 
   return {
     meta: store.meta,

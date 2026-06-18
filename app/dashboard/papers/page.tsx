@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { usePapers } from "../../../hooks/usePapers"
 import { PaperGrid } from "../../../components/papers/PaperGrid"
 import { PaperList } from "../../../components/papers/PaperList"
@@ -13,20 +14,29 @@ import { ErrorState } from "../../../components/ui/error-state"
 import { Paper } from "../../../lib/types"
 
 export default function PapersPage() {
-  const { papers, totalPapersCount, viewMode, isLoading, error, refresh } = usePapers()
+  const router = useRouter()
+  const { papers, totalPapersCount, viewMode, isLoading, error, refresh, deletePaper, toggleFavorite, renamePaper } = usePapers()
   
   // Dialog state
   const [paperToDelete, setPaperToDelete] = React.useState<Paper | null>(null)
 
   // Handlers for PaperActions
-  const handleOpen = (id: string) => console.log("Navigate to paper:", id)
-  const handleFavorite = (id: string) => console.log("Toggle favorite for:", id)
-  const handleRename = (id: string) => console.log("Rename paper:", id)
-  const handleCompare = (id: string) => console.log("Add to comparison:", id)
+  const handleOpen = (id: string) => router.push(`/dashboard/papers/${id}`)
+  const handleFavorite = (id: string) => {
+    const paper = papers.find(p => p.id === id)
+    if (paper) toggleFavorite(id, !paper.isFavorite)
+  }
+  const handleRename = async (id: string) => {
+    const newTitle = prompt("Enter new title:")
+    if (newTitle) {
+      await renamePaper(id, newTitle)
+    }
+  }
+  const handleCompare = (id: string) => console.log("Comparison not fully implemented, id:", id)
   
-  const handleDeleteConfirm = (id: string) => {
-    console.log("Deleting paper:", id)
-    // Here you would call api.deletePaper(id) and then refresh()
+  const handleDeleteConfirm = async (id: string) => {
+    await deletePaper(id)
+    setPaperToDelete(null)
   }
 
   return (

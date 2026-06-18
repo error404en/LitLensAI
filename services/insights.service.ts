@@ -1,4 +1,4 @@
-import { AIOrchestrator } from "../lib/ai/orchestrator/AIOrchestrator";
+import { orchestrator } from "../lib/ai/orchestrator/AIOrchestrator";
 
 export type InsightType = 
   | "novel_contributions" 
@@ -22,9 +22,6 @@ export interface ProjectInsight {
 
 export const InsightsService = {
   async generateInsight(projectId: string, type: InsightType, userId: string): Promise<string> {
-    const orchestrator = AIOrchestrator.getInstance();
-    
-    // We construct a specific instruction based on the insight type
     const instructions: Record<InsightType, string> = {
       novel_contributions: "Identify the most novel contributions across all papers in this project.",
       research_trends: "Summarize the overarching research trends present in the literature.",
@@ -36,14 +33,13 @@ export const InsightsService = {
       future_work: "Identify the primary directions for future work proposed by the authors."
     };
 
-    const response = await orchestrator.execute({
-      feature: "summarize",
+    const response = await orchestrator.execute("Summarize", {
       projectId,
       userId,
-      input: instructions[type],
+      query: instructions[type],
     });
 
-    return response.content;
+    return typeof response === "string" ? response : JSON.stringify(response);
   },
 
   async getInsights(_projectId: string): Promise<ProjectInsight[]> {

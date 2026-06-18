@@ -1,4 +1,4 @@
-import { useResearchProgress } from "../../../../hooks/useResearchProgress";
+import { useResearchProgress } from "../../../hooks/useResearchProgress";
 
 interface ResearchProgressProps {
   projectId: string;

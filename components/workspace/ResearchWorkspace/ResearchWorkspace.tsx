@@ -12,10 +12,10 @@ import { RecentSessions } from "./RecentSessions";
 import { RelatedPapers } from "./RelatedPapers";
 import { ResearchTimeline } from "./ResearchTimeline";
 import { PinnedInsights } from "./PinnedInsights";
-import { useWorkspace } from "../../../../hooks/useWorkspace";
+import { useWorkspace } from "../../../hooks/useWorkspace";
 import { EmptyState } from "../../intelligence/EmptyState";
 import { LoadingSkeleton } from "../../intelligence/LoadingSkeleton";
-import { useWorkspaceStore } from "../../../../stores/workspace.store";
+import { useWorkspaceStore } from "../../../stores/workspace.store";
 
 interface ResearchWorkspaceProps {
   projectId: string;

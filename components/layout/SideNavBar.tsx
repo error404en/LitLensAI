@@ -1,7 +1,14 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
+import { useClerk } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 export function SideNavBar() {
+  const { signOut } = useClerk();
+  const router = useRouter();
+
   return (
     <aside className="bg-surface dark:bg-surface h-screen w-64 fixed left-0 top-0 border-r border-outline-variant dark:border-outline-variant flex-col p-6 z-40 hidden md:flex">
       {/* Header */}
@@ -24,23 +31,23 @@ export function SideNavBar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1">
         {/* Active Tab: Home */}
-        <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-primary dark:text-primary font-bold bg-primary-container/10 dark:bg-primary-container/10 active:scale-95 duration-100">
+        <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-primary dark:text-primary font-bold bg-primary-container/10 dark:bg-primary-container/10 active:scale-95 duration-100">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
-          <span className="font-label-md text-label-md">Home</span>
+          <span className="font-label-md text-label-md">Dashboard</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
-          <span className="material-symbols-outlined">search</span>
-          <span className="font-label-md text-label-md">Search</span>
-        </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
+        <Link href="/dashboard/projects" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
           <span className="material-symbols-outlined">library_books</span>
-          <span className="font-label-md text-label-md">My Library</span>
+          <span className="font-label-md text-label-md">My Projects</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
+        <Link href="/dashboard/papers" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
+          <span className="material-symbols-outlined">article</span>
+          <span className="font-label-md text-label-md">All Papers</span>
+        </Link>
+        <Link href="#" onClick={(e) => { e.preventDefault(); alert("Research Gaps feature is coming soon!"); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
           <span className="material-symbols-outlined">insights</span>
           <span className="font-label-md text-label-md">Research Gaps</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
+        <Link href="#" onClick={(e) => { e.preventDefault(); alert("Settings are managed via your profile menu in the top right."); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 dark:hover:bg-surface-variant/50 transition-colors active:scale-95 duration-100">
           <span className="material-symbols-outlined">settings</span>
           <span className="font-label-md text-label-md">Settings</span>
         </Link>
@@ -48,11 +55,14 @@ export function SideNavBar() {
 
       {/* Footer */}
       <div className="mt-auto space-y-1 pt-4 border-t border-outline-variant">
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors">
+        <Link href="#" onClick={(e) => { e.preventDefault(); alert("Help center is coming soon!"); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors">
           <span className="material-symbols-outlined text-[18px]">help</span>
           <span className="font-label-md text-label-md">Help</span>
         </Link>
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors cursor-pointer">
+        <button 
+          onClick={() => signOut(() => router.push("/"))}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors cursor-pointer"
+        >
           <span className="material-symbols-outlined text-[18px]">logout</span>
           <span className="font-label-md text-label-md">Logout</span>
         </button>

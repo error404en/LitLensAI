@@ -9,6 +9,7 @@ import { ProjectToolbar } from "../../../components/projects/ProjectToolbar"
 import { ProjectSkeleton } from "../../../components/projects/ProjectSkeleton"
 import { ProjectEmptyState } from "../../../components/projects/ProjectEmptyState"
 import { CreateProjectDialog } from "../../../components/projects/CreateProjectDialog"
+import { RenameProjectDialog } from "../../../components/projects/RenameProjectDialog"
 import { ConfirmDialog } from "../../../components/ui/confirm-dialog"
 import { ErrorState } from "../../../components/ui/error-state"
 
@@ -23,16 +24,18 @@ export default function ProjectsPage() {
     createProject,
     deleteProject,
     archiveProject,
-    toggleFavorite
+    toggleFavorite,
+    renameProject
   } = useProjects()
   
   // Dialog states
   const [projectToDelete, setProjectToDelete] = React.useState<string | null>(null)
   const [projectToArchive, setProjectToArchive] = React.useState<string | null>(null)
+  const [projectToRename, setProjectToRename] = React.useState<string | null>(null)
 
   // Handlers
   const handleOpen = (id: string) => router.push(`/dashboard/projects/${id}`)
-  const handleRename = (id: string) => console.log("Rename:", id)
+  const handleRename = (id: string) => setProjectToRename(id)
 
   return (
     <div className="flex-1 space-y-6 p-4 sm:p-8 pt-6 max-w-[1600px] mx-auto w-full">
@@ -98,6 +101,17 @@ export default function ProjectsPage() {
         title="Archive Project"
         description="Are you sure you want to archive this project? It will be hidden from the active workspace but can be restored later."
         confirmText="Archive Project"
+      />
+
+      <RenameProjectDialog
+        isOpen={!!projectToRename}
+        onClose={() => setProjectToRename(null)}
+        currentName={projects.find(p => p.id === projectToRename)?.title || ""}
+        onRename={async (newName) => {
+          if (projectToRename) {
+            await renameProject(projectToRename, newName)
+          }
+        }}
       />
     </div>
   )

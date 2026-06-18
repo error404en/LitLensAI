@@ -51,7 +51,7 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
 )
 Dropdown.displayName = "Dropdown"
 
-export interface DropdownItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
+export type DropdownItemProps = React.ButtonHTMLAttributes<HTMLButtonElement>
 
 const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(
   ({ className, ...props }, ref) => {

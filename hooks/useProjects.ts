@@ -92,6 +92,11 @@ export function useProjects() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
   })
 
+  const renameMutation = useMutation({
+    mutationFn: ({ id, title }: { id: string, title: string }) => ProjectsService.updateProject(id, { title }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+  })
+
   return {
     // Data
     projects: sortedProjects,
@@ -131,6 +136,9 @@ export function useProjects() {
     },
     toggleFavorite: async (id: string, isFav: boolean) => {
       return favoriteMutation.mutateAsync({ id, isFav })
+    },
+    renameProject: async (id: string, title: string) => {
+      return renameMutation.mutateAsync({ id, title })
     }
   }
 }

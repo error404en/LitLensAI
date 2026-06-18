@@ -14,8 +14,11 @@ export function useSupabaseRealtime() {
     
     const supabase = createClient()
     
+    // Use a unique channel name to prevent "cannot add callbacks after subscribe()" in StrictMode
+    const channelName = `schema-db-changes-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+    
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'uploads' },

@@ -1,5 +1,6 @@
 import { FileText, MessageSquare, GitCompare, BookOpen, Sparkles } from "lucide-react";
-import { useActionCenter } from "../../../../hooks/useActionCenter";
+import { useActionCenter } from "../../../hooks/useActionCenter";
+import { useRouter } from "next/navigation";
 
 interface ActionCenterProps {
   projectId: string;
@@ -7,6 +8,7 @@ interface ActionCenterProps {
 
 export function ActionCenter({ projectId }: ActionCenterProps) {
   const { data: _actions } = useActionCenter(projectId);
+  const router = useRouter();
 
   return (
     <div className="bg-surface border rounded-xl p-4 sticky top-4">
@@ -14,6 +16,7 @@ export function ActionCenter({ projectId }: ActionCenterProps) {
       
       <div className="space-y-2">
         <button 
+          onClick={() => router.push(`/dashboard/projects/${projectId}?tab=papers`)}
           className="w-full flex items-center p-3 text-sm text-left rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
         >
           <BookOpen className="h-4 w-4 mr-3" />
@@ -24,6 +27,7 @@ export function ActionCenter({ projectId }: ActionCenterProps) {
         </button>
 
         <button 
+          onClick={() => router.push(`/dashboard/projects/${projectId}?tab=chat`)}
           className="w-full flex items-center p-3 text-sm text-left rounded-lg hover:bg-muted transition-colors"
         >
           <MessageSquare className="h-4 w-4 mr-3 text-muted-foreground" />
@@ -34,6 +38,7 @@ export function ActionCenter({ projectId }: ActionCenterProps) {
         </button>
 
         <button 
+          onClick={() => router.push(`/dashboard/projects/${projectId}?tab=compare`)}
           className="w-full flex items-center p-3 text-sm text-left rounded-lg hover:bg-muted transition-colors"
         >
           <GitCompare className="h-4 w-4 mr-3 text-muted-foreground" />
@@ -44,6 +49,7 @@ export function ActionCenter({ projectId }: ActionCenterProps) {
         </button>
 
         <button 
+          onClick={() => router.push(`/dashboard/projects/${projectId}?tab=chat`)}
           className="w-full flex items-center p-3 text-sm text-left rounded-lg hover:bg-muted transition-colors"
         >
           <Sparkles className="h-4 w-4 mr-3 text-purple-500" />
@@ -54,6 +60,7 @@ export function ActionCenter({ projectId }: ActionCenterProps) {
         </button>
         
         <button 
+          onClick={() => router.push(`/dashboard/projects/${projectId}?tab=notes`)}
           className="w-full flex items-center p-3 text-sm text-left rounded-lg hover:bg-muted transition-colors"
         >
           <FileText className="h-4 w-4 mr-3 text-muted-foreground" />

@@ -1,5 +1,5 @@
 import { FileText, Plus, ExternalLink } from "lucide-react";
-import { useRelatedPapers } from "../../../../hooks/useRelatedPapers";
+import { useRelatedPapers } from "../../../hooks/useRelatedPapers";
 
 interface RelatedPapersProps {
   projectId: string;

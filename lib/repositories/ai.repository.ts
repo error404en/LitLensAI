@@ -27,7 +27,7 @@ export const AIRepository = {
       id: c.id,
       paperId: c.paper_id,
       projectId: c.project_id,
-      title: c.title,
+      title: c.title || "Untitled",
       isPinned: c.is_pinned,
       isFavorite: false,
       createdAt: c.created_at,
@@ -99,9 +99,10 @@ export const AIRepository = {
       .update(updateData)
       .eq("id", id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw new DatabaseError(error.message, error);
+    if (!data) throw new DatabaseError(`Conversation with ID ${id} not found`, undefined);
     return {
       id: data.id,
       paperId: data.paper_id,

@@ -12,7 +12,7 @@ export function PaperSort() {
       <span className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline-block">Sort by:</span>
       <Select 
         value={sortBy} 
-        onChange={(e) => setSortBy(e.target.value as any)}
+        onChange={(e) => setSortBy(e.target.value as Parameters<typeof setSortBy>[0])}
         aria-label="Sort papers"
         className="w-[160px]"
       >
