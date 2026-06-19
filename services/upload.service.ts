@@ -122,24 +122,32 @@ export const UploadService = {
     await UploadRepository.updateStatus(uploadId, "processing", { progress: 100 });
 
     // Create the Paper in DB
-    const { PapersRepository } = await import("../lib/repositories/papers.repository");
-    const paper = await PapersRepository.create({
-      projectId: (projectId || null) as unknown as string,
-      title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-      authors: [],
-      abstract: "",
-      year: new Date().getFullYear(),
-      journal: "",
-      tags: [],
-      status: "processing", // initial state
-      summary: undefined,
-      fileUrl: fileUrl,
-      fileName: file.name,
-      fileSize: file.size,
-      mimeType: file.type,
-      isFavorite: false,
-      embeddingCreated: false,
-    });
+    let paper;
+    try {
+      const { PapersRepository } = await import("../lib/repositories/papers.repository");
+      paper = await PapersRepository.create({
+        projectId: (projectId || null) as unknown as string,
+        title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+        authors: [],
+        abstract: "",
+        year: new Date().getFullYear(),
+        journal: "",
+        tags: [],
+        status: "processing", // initial state
+        summary: undefined,
+        fileUrl: fileUrl,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        isFavorite: false,
+        embeddingCreated: false,
+      });
+    } catch (err) {
+      console.error("Failed to create paper in DB", err);
+      const failed = await UploadRepository.updateStatus(uploadId, "failed", { error: "Database paper creation failed" });
+      onStatusChange("failed");
+      return failed;
+    }
 
     // Trigger Pipeline
     try {

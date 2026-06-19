@@ -15,7 +15,7 @@ export const ActionCenterService = {
 
     const lastOpenedPaperId = papers.length > 0 ? papers[0].id : null;
     const lastConversationId = conversations.length > 0 ? conversations[0].id : null;
-    const unreadPapers = papers.length; // Mock
+    const unreadPapers = papers.filter(p => !p.embeddingCreated).length;
 
     return {
       lastOpenedPaperId,

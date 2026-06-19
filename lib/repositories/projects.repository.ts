@@ -28,7 +28,7 @@ function mapProject(row: ProjectRow): Project {
     status: "active" as ProjectStatus,
     isFavorite: false,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at || row.created_at,
   };
 }
 
@@ -156,7 +156,7 @@ export const ProjectsRepository = {
       .from("activities")
       .insert({
         project_id: activity.projectId,
-        user_id: userUUID || undefined,
+        user_id: (userUUID && userUUID !== "null" && userUUID !== "undefined") ? userUUID : undefined,
         type: activity.type,
         description: activity.description,
       })

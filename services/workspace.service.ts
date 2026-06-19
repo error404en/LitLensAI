@@ -15,7 +15,7 @@ export const WorkspaceService = {
     const papers = await PapersRepository.findByProjectId(projectId);
     
     // In a real app, lastOpenedPaperId would be stored in a user_project_preferences table
-    const unreadPapers = papers.filter(p => p.status === "completed").length; // Mocking unread logic
+    const unreadPapers = papers.filter(p => !p.embeddingCreated).length;
     const lastOpenedPaperId = papers.length > 0 ? papers[0].id : null;
 
     return {

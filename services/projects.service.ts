@@ -47,7 +47,7 @@ export const ProjectsService = {
         status: "active",
         isFavorite: false,
         createdAt: data.created_at,
-        updatedAt: undefined,
+        updatedAt: data.created_at,
       } as Project;
     } catch (error) {
       console.error("ProjectsService.createProject:", error);

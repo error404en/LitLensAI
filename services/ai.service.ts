@@ -85,8 +85,7 @@ export const AIService = {
 
   // Suggestions
   async generateSuggestions(context: AIContext | null): Promise<AISuggestedQuestion[]> {
-    // In reality, this would prompt OpenAI based on the context.
-    // We return static contextual mock suggestions.
+    // In the absence of an LLM endpoint, we return static contextual suggestions to guide the user.
     await new Promise((r) => setTimeout(r, 200));
 
     if (context?.selectedText) {

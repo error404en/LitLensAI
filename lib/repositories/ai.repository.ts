@@ -68,7 +68,7 @@ export const AIRepository = {
       .insert({
         paper_id: conversation.paperId,
         project_id: conversation.projectId,
-        user_id: userUUID || undefined,
+        user_id: (userUUID && userUUID !== "null" && userUUID !== "undefined") ? userUUID : undefined,
         title: conversation.title,
         is_pinned: conversation.isPinned || false,
       })
@@ -158,7 +158,7 @@ export const AIRepository = {
       .from("messages")
       .insert({
         conversation_id: message.conversationId,
-        user_id: userUUID || undefined,
+        user_id: (userUUID && userUUID !== "null" && userUUID !== "undefined") ? userUUID : undefined,
         role: message.role,
         content: message.content,
         citations: message.citations,

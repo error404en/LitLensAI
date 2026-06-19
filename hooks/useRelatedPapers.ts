@@ -8,8 +8,24 @@ export const useRelatedPapers = (projectId: string, sourcePaperId?: string | nul
     queryKey: ["related-papers", projectId, sourcePaperId],
     queryFn: async () => {
       const papers = await PapersRepository.findByProjectId(projectId);
-      // Mock: return random 3 papers
-      return papers.filter(p => p.id !== sourcePaperId).slice(0, 3);
+      const otherPapers = papers.filter(p => p.id !== sourcePaperId);
+      
+      if (!sourcePaperId) {
+        // Return most recently updated papers if no source provided
+        return otherPapers.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 3);
+      }
+
+      const sourcePaper = papers.find(p => p.id === sourcePaperId);
+      if (!sourcePaper || !sourcePaper.tags || sourcePaper.tags.length === 0) {
+        return otherPapers.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 3);
+      }
+
+      // Sort by number of shared tags
+      return otherPapers.sort((a, b) => {
+        const aShared = a.tags?.filter(t => sourcePaper.tags.includes(t)).length || 0;
+        const bShared = b.tags?.filter(t => sourcePaper.tags.includes(t)).length || 0;
+        return bShared - aShared;
+      }).slice(0, 3);
     },
     enabled: !!projectId,
   });

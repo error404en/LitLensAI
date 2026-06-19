@@ -20,13 +20,25 @@ export const ProgressService = {
     const papersProcessed = papers.filter(p => p.status === "completed").length;
     const completionPercentage = totalPapers === 0 ? 0 : Math.round((papersProcessed / totalPapers) * 100);
 
-    // Mock deeper metrics
+    let annotationsCount = 0;
+    try {
+      const { PDFService } = await import("./pdf.service");
+      const annotationsPromises = papers.map(p => PDFService.getAnnotations(p.id));
+      const annotationsResults = await Promise.allSettled(annotationsPromises);
+      annotationsCount = annotationsResults.reduce((acc, result) => {
+        if (result.status === "fulfilled") return acc + result.value.length;
+        return acc;
+      }, 0);
+    } catch (e) {
+      console.error("Failed to fetch annotations for progress:", e);
+    }
+
     return {
       papersProcessed,
       totalPapers,
       readingProgress: Math.min(100, Math.round(completionPercentage * 0.5)),
-      annotationsCount: conversations.length * 3, // Mock
-      comparisonsCount: 0, // Mock until comparisons table is queried
+      annotationsCount,
+      comparisonsCount: 0,
       reviewsCount: 0,
       completionPercentage
     };

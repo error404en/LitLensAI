@@ -46,7 +46,7 @@ function mapPaper(row: PaperRow): Paper {
     embeddingCreated: row.embedding_created,
     uploadedAt: row.uploaded_at,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at || row.created_at,
   };
 }
 

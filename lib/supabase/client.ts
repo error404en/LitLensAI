@@ -1,5 +1,11 @@
 import { createBrowserClient } from '@supabase/ssr';
 
+declare global {
+  interface Window {
+    Clerk?: any;
+  }
+}
+
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +21,6 @@ export function createClient() {
               await new Promise(r => setTimeout(r, 100));
               retries--;
             }
-            // @ts-expect-error - Next.js internal type missing occasionally in dev
             clerkToken = await window.Clerk?.session?.getToken({ template: 'supabase' });
           } catch (e) {
             console.error("Clerk JWT fetch failed:", e);
