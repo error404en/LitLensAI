@@ -36,7 +36,11 @@ export default function LiteratureReviewGeneratorPage() {
       const selectedTitles = papers.filter(p => selectedPaperIds.includes(p.id)).map(p => p.title).join(", ");
       const query = `Write a literature review on "${topic}". Research Question: "${researchQuestion}". Synthesize these papers: ${selectedTitles}`;
       const result = await reviewPapersAction(projectId, query);
-      setReviewResult(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+      if (typeof result === 'object' && result !== null && 'error' in result) {
+        setReviewResult(`**Error:** ${(result as any).error}`);
+      } else {
+        setReviewResult(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+      }
     } catch (error) {
       console.error(error);
       setReviewResult("Failed to generate literature review. Please try again.");

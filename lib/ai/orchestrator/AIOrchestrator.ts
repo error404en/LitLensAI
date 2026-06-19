@@ -13,6 +13,7 @@ import { StreamingManager } from "./StreamingManager";
 import { AIExecutionRepository } from "../../repositories/ai-execution.repository";
 import { CitationRepository } from "../../repositories/citation.repository";
 import { StreamEvent } from "../stream/stream-handler";
+import { StructuredLogger } from "./StructuredLogger";
 
 export class AIOrchestrator {
   private contextBuilder = new ContextBuilder();
@@ -54,6 +55,8 @@ export class AIOrchestrator {
     const taskConfig = FeatureRegistry.getTaskForFeature(feature);
     const providerName = context.providerName || "openai";
     const provider = providerRegistry.getProvider(providerName);
+
+    StructuredLogger.info("AI_EXECUTION_STARTED", { feature, providerName, stream });
 
     // 3. Log Execution Start
     const execution = await AIExecutionRepository.create({
@@ -124,12 +127,14 @@ export class AIOrchestrator {
         // 9. Update Execution Status
         const duration = Date.now() - startTime;
         await AIExecutionRepository.updateStatus(execution.id, "completed", duration);
+        StructuredLogger.info("AI_EXECUTION_COMPLETED", { feature, providerName, duration, executionId: execution.id });
 
         return formattedResponse;
       }
     } catch (error: unknown) {
       // Log Failure
       const duration = Date.now() - startTime;
+      StructuredLogger.error("AI_EXECUTION_FAILED", error, { feature, providerName, duration });
       const errorMessage = error instanceof Error ? error.message : String(error);
       await AIExecutionRepository.updateStatus(execution.id, "failed", duration, errorMessage);
       throw error;

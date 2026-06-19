@@ -37,7 +37,11 @@ export default function ComparePage() {
       const selectedTitles = papers.filter(p => selectedPaperIds.includes(p.id)).map(p => p.title).join(", ");
       const query = `Compare the following papers: ${selectedTitles}`;
       const result = await comparePapersAction(projectId, query);
-      setComparisonResult(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+      if (typeof result === 'object' && result !== null && 'error' in result) {
+        setComparisonResult(`**Error:** ${(result as any).error}`);
+      } else {
+        setComparisonResult(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+      }
     } catch (error) {
       console.error(error);
       setComparisonResult("Failed to generate comparison. Please try again.");

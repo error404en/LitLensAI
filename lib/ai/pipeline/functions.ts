@@ -2,7 +2,18 @@ import { inngest } from "./inngest.client";
 import { AIPipelineService } from "@/services/ai-pipeline.service";
 
 export const processPaper = inngest.createFunction(
-  { id: "process-paper", triggers: [{ event: "paper.uploaded" }] },
+  { 
+    id: "process-paper", 
+    triggers: [{ event: "paper.uploaded" }],
+    retries: 3,
+    onFailure: async ({ event, error }) => {
+      const paperId = (event.data.event.data as any).paperId;
+      if (paperId) {
+        const pipelineService = new AIPipelineService();
+        await pipelineService.updateStatus(paperId, "failed", error.message);
+      }
+    }
+  },
   async ({ event, step }) => {
     const paperId = (event.data as { paperId: string }).paperId;
     const pipelineService = new AIPipelineService();

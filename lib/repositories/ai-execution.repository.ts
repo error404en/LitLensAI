@@ -15,9 +15,9 @@ export const AIExecutionRepository = {
     const { data, error } = await adminClient
       .from("ai_executions")
       .insert({
-        user_id: params.userId,
-        project_id: params.projectId,
-        paper_id: params.paperId,
+        user_id: (params.userId && params.userId !== "null" && params.userId !== "undefined") ? params.userId : undefined,
+        project_id: (params.projectId && params.projectId !== "null" && params.projectId !== "undefined") ? params.projectId : undefined,
+        paper_id: (params.paperId && params.paperId !== "null" && params.paperId !== "undefined") ? params.paperId : undefined,
         task_name: params.taskName,
         feature_name: params.featureName,
         provider: params.provider,

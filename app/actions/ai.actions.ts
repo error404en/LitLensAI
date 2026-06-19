@@ -6,19 +6,29 @@ import { auth } from "@clerk/nextjs/server";
 const aiOps = new AIOperationsService();
 
 export async function comparePapersAction(projectId: string, query: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
 
-  const response = await aiOps.compare(userId, projectId, query);
-  return response;
+    const response = await aiOps.compare(userId, projectId, query);
+    return response;
+  } catch (error) {
+    console.error("comparePapersAction error:", error);
+    return { error: error instanceof Error ? error.message : "Failed to compare papers" };
+  }
 }
 
 export async function reviewPapersAction(projectId: string, query: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
 
-  const response = await aiOps.review(userId, projectId, query);
-  return response;
+    const response = await aiOps.review(userId, projectId, query);
+    return response;
+  } catch (error) {
+    console.error("reviewPapersAction error:", error);
+    return { error: error instanceof Error ? error.message : "Failed to review papers" };
+  }
 }
 
 export async function createProjectAction(title: string, description?: string) {
