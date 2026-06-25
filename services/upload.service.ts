@@ -37,11 +37,21 @@ export const UploadService = {
   },
 
   /**
-   * Check if a file is a duplicate
+   * Calculate SHA-256 hash of a file
    */
-  async checkDuplicate(fileName: string): Promise<DuplicateCheckResult> {
+  async calculateHash(file: File): Promise<string> {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  },
+
+  /**
+   * Check if a file is a duplicate by its content hash
+   */
+  async checkDuplicate(fileName: string, hash?: string, excludeUploadId?: string): Promise<DuplicateCheckResult> {
     try {
-      return await UploadRepository.findDuplicates(fileName);
+      return await UploadRepository.findDuplicates(fileName, hash, excludeUploadId);
     } catch (error) {
       console.error("UploadService.checkDuplicate:", error);
       return { isDuplicate: false };
@@ -56,7 +66,8 @@ export const UploadService = {
     projectId: string | undefined,
     onProgress: (percentage: number) => void,
     onStatusChange: (status: UploadStatus) => void,
-    providedUploadId?: string
+    providedUploadId?: string,
+    skipDuplicateCheck?: boolean
   ): Promise<UploadFile> {
     const uploadId = providedUploadId || crypto.randomUUID();
 
@@ -90,16 +101,20 @@ export const UploadService = {
       return failed;
     }
 
+    const fileHash = await this.calculateHash(file);
+
     // Step 2: Check duplicates
-    onStatusChange("checking_duplicate");
-    const duplicateResult = await this.checkDuplicate(file.name);
-    if (duplicateResult.isDuplicate) {
-      const duplicate = await UploadRepository.updateStatus(uploadId, "pending", {
-        isDuplicate: true,
-        duplicatePaperId: duplicateResult.existingPaperId,
-      });
-      onStatusChange("pending");
-      return duplicate;
+    if (!skipDuplicateCheck) {
+      onStatusChange("checking_duplicate");
+      const duplicateResult = await this.checkDuplicate(file.name, fileHash, uploadId);
+      if (duplicateResult.isDuplicate) {
+        const duplicate = await UploadRepository.updateStatus(uploadId, "pending", {
+          isDuplicate: true,
+          duplicatePaperId: duplicateResult.existingPaperId,
+        });
+        onStatusChange("pending");
+        return duplicate;
+      }
     }
 
     // Step 3: Upload
@@ -141,10 +156,12 @@ export const UploadService = {
         mimeType: file.type,
         isFavorite: false,
         embeddingCreated: false,
+        embeddingHash: fileHash,
       });
     } catch (err) {
       console.error("Failed to create paper in DB", err);
-      const failed = await UploadRepository.updateStatus(uploadId, "failed", { error: "Database paper creation failed" });
+      const errMsg = err instanceof Error ? err.message : "Database paper creation failed";
+      const failed = await UploadRepository.updateStatus(uploadId, "failed", { error: errMsg });
       onStatusChange("failed");
       return failed;
     }

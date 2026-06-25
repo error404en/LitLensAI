@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { Project } from "../lib/types"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useProjectStore } from "../stores/project.store"
 import { ProjectsService } from "../services/projects.service"
@@ -79,7 +80,20 @@ export function useProjects() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => ProjectsService.deleteProject(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ["projects"] });
+      const previousProjects = queryClient.getQueryData<Project[]>(["projects"]);
+      if (previousProjects) {
+        queryClient.setQueryData<Project[]>(["projects"], old => old ? old.filter(p => p.id !== deletedId) : []);
+      }
+      return { previousProjects };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousProjects) {
+        queryClient.setQueryData(["projects"], context.previousProjects);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["projects"] })
   })
 
   const archiveMutation = useMutation({

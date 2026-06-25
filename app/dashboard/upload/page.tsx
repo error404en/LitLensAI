@@ -11,6 +11,7 @@ import { UploadSuccess } from "../../../components/upload/UploadSuccess";
 import { UploadError } from "../../../components/upload/UploadError";
 import { UploadEmpty } from "../../../components/upload/UploadEmpty";
 import { DuplicateDialog } from "../../../components/upload/DuplicateDialog";
+import { AddToProjectDialog } from "../../../components/projects/AddToProjectDialog";
 
 import { useRouter } from "next/navigation";
 
@@ -42,6 +43,7 @@ export default function UploadPage() {
 
   // Active duplicate dialog
   const [activeDuplicate, setActiveDuplicate] = React.useState<string | null>(null);
+  const [addingPaper, setAddingPaper] = React.useState<{ id: string; title: string } | null>(null);
   const duplicateUpload = React.useMemo(
     () => uploads.find((u) => u.id === activeDuplicate),
     [uploads, activeDuplicate]
@@ -109,7 +111,11 @@ export default function UploadPage() {
                   key={u.id}
                   upload={u}
                   onViewPaper={() => router.push(`/dashboard/papers/${u.paperId || u.id}`)}
-                  onAddToProject={() => console.log("Add to project:", u.paperId)}
+                  onAddToProject={() => {
+                    if (u.paperId) {
+                      setAddingPaper({ id: u.paperId, title: u.fileName });
+                    }
+                  }}
                   onUploadMore={() => browseRef.current?.click()}
                 />
               ))}
@@ -168,6 +174,15 @@ export default function UploadPage() {
             resolveDuplicate(duplicateUpload.id, "cancel");
             setActiveDuplicate(null);
           }}
+        />
+      )}
+
+      {addingPaper && (
+        <AddToProjectDialog
+          isOpen={!!addingPaper}
+          onClose={() => setAddingPaper(null)}
+          paperId={addingPaper.id}
+          paperTitle={addingPaper.title}
         />
       )}
     </div>

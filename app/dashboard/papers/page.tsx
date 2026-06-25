@@ -10,8 +10,10 @@ import { PaperSkeleton } from "../../../components/papers/PaperSkeleton"
 import { PaperEmptyState } from "../../../components/papers/PaperEmptyState"
 import { PaperPagination } from "../../../components/papers/PaperPagination"
 import { DeletePaperDialog } from "../../../components/papers/DeletePaperDialog"
+import { RenamePaperDialog } from "../../../components/papers/RenamePaperDialog"
 import { ErrorState } from "../../../components/ui/error-state"
 import { Paper } from "../../../lib/types"
+import { AddToProjectDialog } from "../../../components/projects/AddToProjectDialog"
 
 export default function PapersPage() {
   const router = useRouter()
@@ -19,6 +21,8 @@ export default function PapersPage() {
   
   // Dialog state
   const [paperToDelete, setPaperToDelete] = React.useState<Paper | null>(null)
+  const [paperToRename, setPaperToRename] = React.useState<Paper | null>(null)
+  const [addingPaper, setAddingPaper] = React.useState<{ id: string; title: string } | null>(null)
 
   // Handlers for PaperActions
   const handleOpen = (id: string) => router.push(`/dashboard/papers/${id}`)
@@ -26,13 +30,15 @@ export default function PapersPage() {
     const paper = papers.find(p => p.id === id)
     if (paper) toggleFavorite(id, !paper.isFavorite)
   }
-  const handleRename = async (id: string) => {
-    const newTitle = prompt("Enter new title:")
-    if (newTitle) {
-      await renamePaper(id, newTitle)
-    }
+  const handleRename = (id: string) => {
+    const paper = papers.find(p => p.id === id)
+    if (paper) setPaperToRename(paper)
   }
-  const handleCompare = (id: string) => console.log("Comparison not fully implemented, id:", id)
+  const handleCompare = (id: string) => {}
+  const handleAddToProject = (id: string) => {
+    const paper = papers.find(p => p.id === id)
+    if (paper) setAddingPaper({ id: paper.id, title: paper.title })
+  }
   
   const handleDeleteConfirm = async (id: string) => {
     await deletePaper(id)
@@ -71,6 +77,7 @@ export default function PapersPage() {
                 onDelete={(id) => setPaperToDelete(papers.find(p => p.id === id) || null)}
                 onRename={handleRename}
                 onCompare={handleCompare}
+                onAddToProject={handleAddToProject}
               />
             ) : (
               <PaperList 
@@ -80,6 +87,7 @@ export default function PapersPage() {
                 onDelete={(id) => setPaperToDelete(papers.find(p => p.id === id) || null)}
                 onRename={handleRename}
                 onCompare={handleCompare}
+                onAddToProject={handleAddToProject}
               />
             )}
             <PaperPagination />
@@ -93,6 +101,27 @@ export default function PapersPage() {
         onClose={() => setPaperToDelete(null)}
         onConfirm={handleDeleteConfirm}
       />
+      
+      <RenamePaperDialog
+        isOpen={!!paperToRename}
+        onClose={() => setPaperToRename(null)}
+        onRename={async (newName) => {
+          if (paperToRename) {
+            await renamePaper(paperToRename.id, newName)
+          }
+        }}
+        currentName={paperToRename?.title || ""}
+      />
+
+      {addingPaper && (
+        <AddToProjectDialog
+          isOpen={!!addingPaper}
+          onClose={() => setAddingPaper(null)}
+          paperId={addingPaper.id}
+          paperTitle={addingPaper.title}
+          onSuccess={refresh}
+        />
+      )}
     </div>
   )
 }

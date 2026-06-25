@@ -7,9 +7,10 @@ interface AddPaperDialogProps {
   isOpen: boolean
   onClose: () => void
   onAdd: (paperIds: string[]) => Promise<void>
+  projectId: string
 }
 
-export function AddPaperDialog({ isOpen, onClose, onAdd }: AddPaperDialogProps) {
+export function AddPaperDialog({ isOpen, onClose, onAdd, projectId }: AddPaperDialogProps) {
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
@@ -20,7 +21,11 @@ export function AddPaperDialog({ isOpen, onClose, onAdd }: AddPaperDialogProps) 
     if (isOpen) setSelectedIds([])
   }
 
-  const { papers, isLoading } = usePapers()
+  const { allPapers = [], isLoading } = usePapers()
+
+  const availablePapers = React.useMemo(() => {
+    return allPapers.filter(p => p.projectId !== projectId)
+  }, [allPapers, projectId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,10 +51,10 @@ export function AddPaperDialog({ isOpen, onClose, onAdd }: AddPaperDialogProps) 
         <div className="min-h-[200px] max-h-[400px] overflow-y-auto border rounded-md p-4 flex flex-col gap-2">
           {isLoading ? (
             <div className="text-center text-muted-foreground p-4">Loading papers...</div>
-          ) : papers.length === 0 ? (
+          ) : availablePapers.length === 0 ? (
             <div className="text-center text-muted-foreground p-4">No papers available to attach.</div>
           ) : (
-            papers.map(paper => (
+            availablePapers.map(paper => (
               <label key={paper.id} className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-md cursor-pointer border">
                 <input 
                   type="checkbox" 

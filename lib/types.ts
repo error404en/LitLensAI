@@ -36,6 +36,7 @@ export interface Paper {
   readonly uploadedAt: string;
   readonly isFavorite?: boolean;
   readonly embeddingCreated?: boolean;
+  readonly embeddingHash?: string;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -86,4 +87,27 @@ export interface ComparisonResult {
   readonly contrastingResults: readonly string[];
   readonly researchGaps: readonly string[];
   readonly createdAt: string;
+}
+
+export interface Annotation {
+  readonly id: string;
+  readonly paperId: string;
+  readonly userId: string;
+  readonly pageNumber: number;
+  readonly content: string;
+  readonly positionX?: number;
+  readonly positionY?: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface Highlight {
+  readonly id: string;
+  readonly paperId: string;
+  readonly userId: string;
+  readonly pageNumber: number;
+  readonly text: string;
+  readonly color: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }

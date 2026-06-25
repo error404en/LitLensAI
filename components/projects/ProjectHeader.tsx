@@ -4,10 +4,12 @@ import { useProject } from "../../hooks/useProject"
 import { ProjectStatusBadge } from "./ProjectStatusBadge"
 import { ArrowLeft, Edit2, Heart } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { RenameProjectDialog } from "./RenameProjectDialog"
 
 export function ProjectHeader({ project }: { project: Project }) {
   const router = useRouter()
   const { updateProject } = useProject(project.id)
+  const [isRenameOpen, setIsRenameOpen] = React.useState(false)
 
   return (
     <div className="px-4 sm:px-8 py-6 pb-4 flex flex-col gap-4">
@@ -33,12 +35,7 @@ export function ProjectHeader({ project }: { project: Project }) {
             <Heart className={`h-5 w-5 transition-colors ${project.isFavorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
           </button>
           <button 
-            onClick={async () => {
-              const newTitle = prompt("Enter new project title:", project.title)
-              if (newTitle && newTitle !== project.title) {
-                await updateProject({ title: newTitle })
-              }
-            }}
+            onClick={() => setIsRenameOpen(true)}
             className="rounded-md p-1.5 hover:bg-accent text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Rename project"
           >
@@ -46,6 +43,17 @@ export function ProjectHeader({ project }: { project: Project }) {
           </button>
         </div>
         
+        <RenameProjectDialog 
+          isOpen={isRenameOpen} 
+          onClose={() => setIsRenameOpen(false)} 
+          onRename={async (newTitle) => {
+            if (newTitle && newTitle !== project.title) {
+              await updateProject({ title: newTitle })
+            }
+          }} 
+          currentName={project.title} 
+        />
+
         <div className="flex gap-2">
           {/* Action buttons could go here */}
         </div>

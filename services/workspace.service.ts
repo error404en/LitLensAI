@@ -12,6 +12,9 @@ export interface WorkspaceOverview {
 export const WorkspaceService = {
   async getWorkspaceOverview(projectId: string): Promise<WorkspaceOverview> {
     const project = await ProjectsService.getProject(projectId);
+    if (!project) {
+      throw new Error(`Project with ID ${projectId} not found`);
+    }
     const papers = await PapersRepository.findByProjectId(projectId);
     
     // In a real app, lastOpenedPaperId would be stored in a user_project_preferences table

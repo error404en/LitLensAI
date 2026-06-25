@@ -20,7 +20,17 @@ const geist = Geist({
 
 export const metadata: Metadata = {
   title: "LitLens AI - Research Assistant",
-  description: "Precision Literature Survey",
+  description: "Enterprise-grade AI research assistant for navigating, understanding, and synthesizing academic literature via RAG.",
+  openGraph: {
+    title: "LitLens AI - Research Assistant",
+    description: "Enterprise-grade AI research assistant for navigating, understanding, and synthesizing academic literature via RAG.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LitLens AI - Research Assistant",
+    description: "Enterprise-grade AI research assistant for navigating, understanding, and synthesizing academic literature via RAG.",
+  }
 };
 
 export default function RootLayout({

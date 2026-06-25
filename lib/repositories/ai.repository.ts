@@ -1,15 +1,15 @@
 import { AIConversation, AIChatMessage } from "../types/ai";
-import { createClient } from "../supabase/client";
+import { createClient } from "../supabase/server";
 import { DatabaseError } from "../errors";
 
 export const AIRepository = {
   // Conversations
   async getConversations(paperId: string): Promise<AIConversation[]> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("conversations")
       .select("*")
-      .eq("paper_id", paperId)
+      .or(`paper_id.eq.${paperId},project_id.eq.${paperId}`)
       .order("updated_at", { ascending: false });
 
     interface ConversationRow {
@@ -36,7 +36,7 @@ export const AIRepository = {
   },
 
   async getConversation(id: string): Promise<AIConversation | null> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("conversations")
       .select("*")
@@ -60,14 +60,25 @@ export const AIRepository = {
   },
 
   async createConversation(conversation: Omit<AIConversation, "id" | "createdAt" | "updatedAt">): Promise<AIConversation> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
+
+    // Determine if the supplied paperId is actually a project ID
+    let isProject = false;
+    if (conversation.paperId) {
+      const { data: project } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("id", conversation.paperId)
+        .maybeSingle();
+      isProject = !!project;
+    }
 
     const { data, error } = await supabase
       .from("conversations")
       .insert({
-        paper_id: conversation.paperId,
-        project_id: conversation.projectId,
+        paper_id: isProject ? undefined : conversation.paperId,
+        project_id: isProject ? conversation.paperId : conversation.projectId,
         user_id: (userUUID && userUUID !== "null" && userUUID !== "undefined") ? userUUID : undefined,
         title: conversation.title,
         is_pinned: conversation.isPinned || false,
@@ -89,7 +100,7 @@ export const AIRepository = {
   },
 
   async updateConversation(id: string, updates: Partial<Pick<AIConversation, "title" | "isPinned" | "isFavorite">>): Promise<AIConversation> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.isPinned !== undefined) updateData.is_pinned = updates.isPinned;
@@ -116,14 +127,14 @@ export const AIRepository = {
   },
 
   async deleteConversation(id: string): Promise<void> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.from("conversations").delete().eq("id", id);
     if (error) throw new DatabaseError(error.message, error);
   },
 
   // Messages
   async getMessages(conversationId: string): Promise<AIChatMessage[]> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -151,7 +162,7 @@ export const AIRepository = {
   },
 
   async saveMessage(message: Omit<AIChatMessage, "id" | "createdAt">): Promise<AIChatMessage> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
 
     const { data, error } = await supabase
@@ -185,7 +196,7 @@ export const AIRepository = {
   },
 
   async deleteMessage(id: string): Promise<void> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.from("messages").delete().eq("id", id);
     if (error) throw new DatabaseError(error.message, error);
   },

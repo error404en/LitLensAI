@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { useChatStore } from "../stores/chat.store";
-import { AIService } from "../services/ai.service";
+import { generateSuggestionsAction } from "../app/actions/chat.actions";
 
 export function useSuggestedQuestions() {
   const store = useChatStore();
@@ -8,7 +8,7 @@ export function useSuggestedQuestions() {
 
   const loadSuggestions = useCallback(async () => {
     try {
-      const suggestions = await AIService.generateSuggestions(context);
+      const suggestions = await generateSuggestionsAction(context);
       store.setSuggestions(suggestions);
     } catch (err) {
       console.error("Failed to load suggestions:", err);

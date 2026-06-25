@@ -23,8 +23,6 @@ export default function ComparePage() {
     } else {
       if (selectedPaperIds.length < 3) {
         setSelectedPaperIds([...selectedPaperIds, id]);
-      } else {
-        alert("Maximum of 3 papers can be compared at once for optimal viewing.");
       }
     }
   };
@@ -38,7 +36,7 @@ export default function ComparePage() {
       const query = `Compare the following papers: ${selectedTitles}`;
       const result = await comparePapersAction(projectId, query);
       if (typeof result === 'object' && result !== null && 'error' in result) {
-        setComparisonResult(`**Error:** ${(result as any).error}`);
+        setComparisonResult(`**Error:** ${(result as { error: string }).error}`);
       } else {
         setComparisonResult(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
       }

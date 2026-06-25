@@ -86,7 +86,7 @@ export const UploadRepository = {
     return uploads; 
   },
 
-  async findDuplicates(fileName: string): Promise<DuplicateCheckResult> {
+  async findDuplicates(fileName: string, fileHash?: string, excludeUploadId?: string): Promise<DuplicateCheckResult> {
     const supabase = createClient();
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
 
@@ -95,11 +95,15 @@ export const UploadRepository = {
     }
 
     // Check papers table
-    const { data: papers, error: papersError } = await supabase
-      .from("papers")
-      .select("id, file_name")
-      .eq("user_id", userUUID)
-      .eq("file_name", fileName);
+    let query = supabase.from("papers").select("id, file_name, embedding_hash").eq("user_id", userUUID);
+    
+    if (fileHash) {
+      query = query.eq("embedding_hash", fileHash);
+    } else {
+      query = query.eq("file_name", fileName);
+    }
+
+    const { data: papers, error: papersError } = await query;
 
     if (papersError) throw new DatabaseError(papersError.message, papersError);
 
@@ -112,13 +116,18 @@ export const UploadRepository = {
     }
 
     // Check uploads table for in-flight
-    const { data: uploads, error: uploadsError } = await supabase
+    let uploadsQuery = supabase
       .from("uploads")
       .select("id, file_name, status")
       .eq("user_id", userUUID)
       .eq("file_name", fileName)
-      .neq("status", "failed")
-      .neq("status", "cancelled");
+      .in("status", ["validating", "checking_duplicate", "queued", "uploading", "processing"]);
+
+    if (excludeUploadId) {
+      uploadsQuery = uploadsQuery.neq("id", excludeUploadId);
+    }
+
+    const { data: uploads, error: uploadsError } = await uploadsQuery;
 
     if (uploadsError) throw new DatabaseError(uploadsError.message, uploadsError);
 
@@ -185,7 +194,7 @@ export const UploadRepository = {
     const storagePath = `${userUUID}/${Date.now()}_${file.name}`;
 
     const { error } = await supabase.storage
-      .from("papers-bucket")
+      .from("papers")
       .upload(storagePath, file, { upsert: true });
 
     if (error) throw new StorageError(error.message, error);

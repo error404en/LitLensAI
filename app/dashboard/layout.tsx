@@ -33,7 +33,7 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await ensureUserExists();
+  ensureUserExists();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-on-surface">

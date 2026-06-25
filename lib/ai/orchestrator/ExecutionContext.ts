@@ -32,6 +32,7 @@ export interface ProviderConfig {
 
 export interface OrchestrationContext {
   userId: string;
+  orgId?: string;
   projectId?: string;
   paperId?: string;
   

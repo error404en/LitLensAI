@@ -8,6 +8,7 @@ export interface PaperCardProps {
   status: 'complete' | 'processing';
   matchScore?: string;
   onReadSummary?: () => void;
+  onAddToProject?: () => void;
 }
 
 export function PaperCard({
@@ -17,7 +18,8 @@ export function PaperCard({
   year,
   status,
   matchScore,
-  onReadSummary
+  onReadSummary,
+  onAddToProject
 }: PaperCardProps) {
   const isComplete = status === 'complete';
 
@@ -49,14 +51,30 @@ export function PaperCard({
         <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${isComplete ? 'bg-primary/10 text-primary' : 'bg-surface-variant text-on-surface-variant'}`}>
           {isComplete && matchScore ? `${matchScore} Match` : 'Processing...'}
         </span>
-        {isComplete && (
-          <button 
-            className="text-primary text-sm font-medium hover:underline hover:text-primary-container cursor-pointer transition-colors"
-            onClick={onReadSummary}
-          >
-            Read Summary
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {isComplete && onAddToProject && (
+            <button 
+              className="text-primary text-sm font-medium hover:underline hover:text-primary-container cursor-pointer transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToProject();
+              }}
+            >
+              Add to Project
+            </button>
+          )}
+          {isComplete && onReadSummary && (
+            <button 
+              className="text-primary text-sm font-medium hover:underline hover:text-primary-container cursor-pointer transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReadSummary();
+              }}
+            >
+              Read Summary
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

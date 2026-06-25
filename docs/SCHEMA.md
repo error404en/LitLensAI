@@ -1,6 +1,19 @@
 # Database Schema
 
-## Supabase PostgreSQL (Relational Data)
+## Security & Row-Level Security (RLS)
+
+All tables strictly enforce PostgreSQL Row-Level Security.
+- Users are mapped via Clerk JWT claims to the `auth.uid()`.
+- Projects are isolated: `user_id = auth.uid()`.
+- Papers and Activities cascade their RLS through `project_id`.
+
+## Vector Search Index (Qdrant)
+
+While relational data lives in Supabase, vector embeddings live in Qdrant Cloud.
+- **Payload Schema**: `{ paperId: UUID, projectId: UUID, content: string, pageNumber: number }`
+- **Isolation**: Qdrant queries ALWAYS apply an explicit payload filter `must: [{ key: "projectId", match: { value: <UUID> } }]` to prevent cross-tenant vector contamination.
+
+## Supabase Tables
 
 ### 1. `projects`
 - `id` (UUID, Primary Key)

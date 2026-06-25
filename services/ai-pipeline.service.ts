@@ -3,7 +3,7 @@ import { ChunkRepository } from "../lib/repositories/chunk.repository";
 import { VectorRepository } from "../lib/repositories/vector.repository";
 import { PDFParserService } from "../lib/ai/parser/pdf.parser";
 import { DocumentChunker } from "../lib/ai/chunker/chunker";
-import { OpenAIProvider } from "../lib/ai/providers/openai.provider";
+import { providerRegistry } from "../lib/ai/providers/registry";
 import { QdrantRepository } from "../lib/ai/vector/qdrant.client";
 import { adminClient } from "../lib/supabase/admin";
 import { PapersRepository } from "../lib/repositories/papers.repository";
@@ -16,7 +16,7 @@ export class AIPipelineService {
   private vectorRepo = VectorRepository;
   private pdfParser = new PDFParserService();
   private chunker = new DocumentChunker();
-  private aiProvider = new OpenAIProvider();
+  private aiProvider = providerRegistry.getProvider("gemini");
   private qdrant = new QdrantRepository();
   private papersRepo = PapersRepository;
 
@@ -40,7 +40,7 @@ export class AIPipelineService {
 
     // 2. Download from storage
     // file_url is the path in the bucket
-    const { data: fileData, error: downloadError } = await supabase.storage.from("papers-bucket").download(paper.file_url);
+    const { data: fileData, error: downloadError } = await supabase.storage.from("papers").download(paper.file_url);
     if (downloadError || !fileData) throw new Error("Failed to download PDF");
 
     const arrayBuffer = await fileData.arrayBuffer();
@@ -87,6 +87,10 @@ export class AIPipelineService {
       embeddings = embeddings.concat(batchEmbeddings);
     }
 
+    const supabase = adminClient;
+    const { data: paper } = await supabase.from("papers").select("org_id").eq("id", paperId).single();
+    const orgId = paper?.org_id || null;
+
     const points = chunks.map((chunk, i) => {
       const pointId = uuidv4();
       return {
@@ -95,6 +99,7 @@ export class AIPipelineService {
         vector: embeddings[i],
         payload: {
           paperId: paperId,
+          orgId: orgId,
           chunkId: chunk.id,
           pageNumber: chunk.page_number,
           content: chunk.content,

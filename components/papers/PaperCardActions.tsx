@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Dropdown, DropdownItem } from "../ui/dropdown"
-import { MoreVertical, FileText, Heart, Pencil, Trash, GitCompare } from "lucide-react"
+import { MoreVertical, FileText, Heart, Pencil, Trash, GitCompare, FolderPlus } from "lucide-react"
 import { Paper } from "../../lib/types"
 
 interface PaperCardActionsProps {
@@ -10,9 +10,10 @@ interface PaperCardActionsProps {
   onDelete?: (id: string) => void
   onRename?: (id: string) => void
   onCompare?: (id: string) => void
+  onAddToProject?: (id: string) => void
 }
 
-export function PaperCardActions({ paper, onOpen, onFavorite, onDelete, onRename, onCompare }: PaperCardActionsProps) {
+export function PaperCardActions({ paper, onOpen, onFavorite, onDelete, onRename, onCompare, onAddToProject }: PaperCardActionsProps) {
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
@@ -45,6 +46,11 @@ export function PaperCardActions({ paper, onOpen, onFavorite, onDelete, onRename
       <DropdownItem onClick={() => { onCompare?.(paper.id); setIsOpen(false) }}>
         <GitCompare className="mr-2 h-4 w-4" /> Compare
       </DropdownItem>
+      {onAddToProject && (
+        <DropdownItem onClick={() => { onAddToProject(paper.id); setIsOpen(false) }}>
+          <FolderPlus className="mr-2 h-4 w-4" /> Add to Project
+        </DropdownItem>
+      )}
       <div className="h-px bg-border my-1 mx-1" />
       <DropdownItem 
         className="text-destructive focus:text-destructive" 

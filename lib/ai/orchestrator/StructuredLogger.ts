@@ -19,13 +19,30 @@ export class StructuredLogger {
     this.log("METRIC", name, { value, ...tags });
   }
 
+  private static maskSecrets(obj: unknown): unknown {
+    if (typeof obj !== 'object' || obj === null) return obj;
+    if (Array.isArray(obj)) return (obj as unknown[]).map(item => this.maskSecrets(item));
+    
+    const masked = { ...obj as Record<string, unknown> };
+    const sensitiveKeys = ['key', 'token', 'password', 'secret', 'prompt', 'authorization', 'cookie'];
+    
+    for (const key in masked) {
+      if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk))) {
+        masked[key] = '[REDACTED]';
+      } else if (typeof masked[key] === 'object') {
+        masked[key] = this.maskSecrets(masked[key]);
+      }
+    }
+    return masked;
+  }
+
   private static log(level: "INFO" | "WARN" | "ERROR" | "METRIC", event: string, context?: Record<string, unknown>) {
-    const payload = {
+    const payload = this.maskSecrets({
       timestamp: new Date().toISOString(),
       level,
       event,
       ...context
-    };
+    });
 
     // In a production app, this could stream to DataDog, CloudWatch, or Axiom.
     // For now, we serialize it to stdout to prevent noisy unstructured console.logs

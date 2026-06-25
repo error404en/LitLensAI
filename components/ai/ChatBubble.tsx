@@ -2,6 +2,7 @@ import * as React from "react";
 import { cn } from "../../lib/utils";
 import { ChatCitation } from "./ChatCitation";
 import { AICitation } from "../../lib/types/ai";
+import ReactMarkdown from 'react-markdown';
 
 interface ChatBubbleProps {
   content: string;
@@ -13,32 +14,11 @@ export function ChatBubble({ content, role, citations }: ChatBubbleProps) {
   const isUser = role === "user";
   const isError = role === "error";
 
-  // Extremely basic markdown parser for paragraphs, bold, and mock citations
-  // In a full implementation, use 'react-markdown' or 'marked'.
-  const renderContent = () => {
-    const text = content;
-    
-    // Split into paragraphs
-    const paragraphs = text.split("\n\n").map((p, i) => {
-      // Bold
-      const boldParts = p.split(/(\*\*.*?\*\*)/g).map((part, j) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-          return <strong key={j}>{part.slice(2, -2)}</strong>;
-        }
-        return part;
-      });
-
-      return (
-        <p key={i} className="mb-2 last:mb-0">
-          {boldParts}
-        </p>
-      );
-    });
-
-    return paragraphs;
-  };
-
-  const text = isUser ? content : renderContent();
+  const text = isUser ? content : (
+    <div className="prose prose-sm dark:prose-invert max-w-none break-words">
+      <ReactMarkdown>{content}</ReactMarkdown>
+    </div>
+  );
 
   return (
     <div

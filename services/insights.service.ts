@@ -1,4 +1,5 @@
 import { orchestrator } from "../lib/ai/orchestrator/AIOrchestrator";
+import { InsightsRepository } from "../lib/repositories/insights.repository";
 
 export type InsightType = 
   | "novel_contributions" 
@@ -39,19 +40,23 @@ export const InsightsService = {
       query: instructions[type],
     });
 
-    return typeof response === "string" ? response : JSON.stringify(response);
+    const resultText = typeof response === "string" ? response : JSON.stringify(response);
+    
+    // Auto-save the insight to the repository
+    await InsightsRepository.saveInsight(projectId, type, resultText);
+
+    return resultText;
   },
 
-  async getInsights(_projectId: string): Promise<ProjectInsight[]> {
-    // For now, return placeholders. In production, this would fetch saved/cached insights from a database repository
-    return [];
+  async getInsights(projectId: string): Promise<ProjectInsight[]> {
+    return InsightsRepository.getInsights(projectId);
   },
 
-  async saveInsight(_projectId: string, _insightId: string): Promise<void> {
-    // Implement save logic via a future repository
+  async saveInsight(projectId: string, insightId: string): Promise<void> {
+    // insightId is not explicitly handled for raw saves since we use types, but we'll leave the interface
   },
 
   async pinInsight(_projectId: string, _insightId: string): Promise<void> {
-    // Implement pin logic via a future repository
+    // Pinning requires schema support in notes, defaulting to no-op
   }
 };

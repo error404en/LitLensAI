@@ -45,12 +45,12 @@ export class HealthCheckService {
 
     // 3. Check Providers
     try {
-      const openai = providerRegistry.getProvider("openai");
-      const isUp = await openai.health();
-      status.components.providers["openai"] = isUp ? "up" : "down";
+      const gemini = providerRegistry.getProvider("gemini");
+      const isUp = await gemini.health();
+      status.components.providers["gemini"] = isUp ? "up" : "down";
       if (!isUp) status.status = "degraded";
     } catch (e) {
-      status.components.providers["openai"] = "down";
+      status.components.providers["gemini"] = "down";
       status.status = "degraded";
     }
 

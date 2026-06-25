@@ -11,7 +11,9 @@ import { ErrorState } from "../../../../components/ui/error-state"
 import { Loading } from "../../../../components/ui/loading"
 
 import { ProjectNotesEditor } from "../../../../components/projects/ProjectNotesEditor"
+import { ChatPanel } from "../../../../components/ai/ChatPanel"
 import { useSearchParams, useRouter } from "next/navigation"
+import ComparePage from "./compare/page"
 
 export default function SingleProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
   const unwrappedParams = React.use(params)
@@ -19,18 +21,9 @@ export default function SingleProjectPage({ params }: { params: Promise<{ projec
   const searchParams = useSearchParams()
   const router = useRouter()
   
-  const defaultTab = searchParams.get('tab') || "overview"
-  const [activeTab, setActiveTab] = React.useState(defaultTab)
-
-  React.useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab && tab !== activeTab) {
-      setActiveTab(tab)
-    }
-  }, [searchParams])
+  const activeTab = searchParams.get('tab') || "overview"
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId)
     router.replace(`/dashboard/projects/${unwrappedParams.projectId}?tab=${tabId}`)
   }
 
@@ -72,10 +65,11 @@ export default function SingleProjectPage({ params }: { params: Promise<{ projec
             </div>
           )}
           {activeTab === "chat" && (
-            <div className="h-full flex items-center justify-center border-2 border-dashed rounded-lg p-12 text-muted-foreground">
-              AI Chat Component placeholder
+            <div className="h-full border rounded-lg overflow-hidden bg-background">
+              <ChatPanel paperId={project.id} />
             </div>
           )}
+          {activeTab === "compare" && <ComparePage />}
         </main>
         
         <aside className="hidden lg:block w-80 xl:w-96 border-l border-border bg-muted/10 overflow-y-auto">

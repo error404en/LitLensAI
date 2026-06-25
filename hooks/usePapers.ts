@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { usePaperStore } from "../stores/paper.store"
 import { PapersService } from "../services/papers.service"
+import { Paper } from "../lib/types"
 
 const ITEMS_PER_PAGE = 12
 
@@ -90,6 +91,7 @@ export function usePapers(projectId?: string) {
   return {
     // Data
     papers: paginatedPapers,
+    allPapers: sortedPapers,
     totalPapersCount: sortedPapers.length,
     isLoading,
     error: error instanceof Error ? error.message : error ? "Failed to fetch papers" : null,
@@ -121,8 +123,19 @@ export function usePapers(projectId?: string) {
 
     // Mutations
     deletePaper: async (id: string) => {
-      await PapersService.deletePaper(id)
-      queryClient.invalidateQueries({ queryKey: ["papers"] })
+      await queryClient.cancelQueries({ queryKey: ["papers"] });
+      const previousPapers = queryClient.getQueryData<Paper[]>(["papers", projectId]);
+      if (previousPapers) {
+        queryClient.setQueryData<Paper[]>(["papers", projectId], old => old ? old.filter(p => p.id !== id) : []);
+      }
+      try {
+        await PapersService.deletePaper(id);
+      } catch (err) {
+        if (previousPapers) queryClient.setQueryData(["papers", projectId], previousPapers);
+        throw err;
+      } finally {
+        queryClient.invalidateQueries({ queryKey: ["papers"] });
+      }
     },
     toggleFavorite: async (id: string, isFavorite: boolean) => {
       await PapersService.updatePaper(id, { isFavorite })

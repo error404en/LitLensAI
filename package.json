@@ -1,12 +1,29 @@
 {
   "name": "litlens-ai",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Enterprise-grade AI research assistant for navigating, understanding, and synthesizing academic literature via RAG.",
+  "author": "Shreyas",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shreyas/litlens-ai.git"
+  },
+  "keywords": [
+    "ai",
+    "rag",
+    "literature-review",
+    "langchain",
+    "nextjs",
+    "qdrant",
+    "supabase"
+  ],
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "inngest:dev": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.3",

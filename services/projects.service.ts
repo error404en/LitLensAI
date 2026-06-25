@@ -19,17 +19,13 @@ export const ProjectsService = {
     }
   },
 
-  async getProject(id: string): Promise<Project> {
+  async getProject(id: string): Promise<Project | null> {
     try {
       const project = await ProjectsRepository.findById(id);
-      if (!project) throw new Error("Project not found");
       return project;
-    } catch (error: any) {
+    } catch (error) {
       console.error("ProjectsService.getProject:", error);
-      if (error?.message === "Project not found") {
-        throw error;
-      }
-      throw new Error("Failed to fetch project details");
+      return null;
     }
   },
 
@@ -37,7 +33,7 @@ export const ProjectsService = {
     try {
       const { createProjectAction } = await import("../app/actions/ai.actions");
       const data = await createProjectAction(title, description);
-      
+
       // Need to map the data to the Project type since the action returns raw row
       return {
         id: data.id,
@@ -117,12 +113,12 @@ export const ProjectsService = {
     try {
       const papers = await this.getAttachedPapers(projectId);
       const activities = await ProjectsRepository.getActivities(projectId);
-      
+
       const completed = papers.filter(p => p.status === "completed").length;
       const completionPercentage = papers.length === 0 ? 0 : Math.round((completed / papers.length) * 100);
 
       const processing = papers.some(p => p.status === "processing" || p.status === "summarizing" || p.status === "embedding");
-      
+
       return {
         paperCount: papers.length,
         completionPercentage,

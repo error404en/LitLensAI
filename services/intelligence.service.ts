@@ -10,6 +10,9 @@ export interface ProjectIntelligence {
 export const IntelligenceService = {
   async getProjectIntelligence(projectId: string): Promise<ProjectIntelligence> {
     const project = await ProjectsService.getProject(projectId);
+    if (!project) {
+      throw new Error(`Project with ID ${projectId} not found`);
+    }
     const health = await ProjectHealthService.getHealthMetrics(projectId);
     
     return {

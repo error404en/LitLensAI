@@ -14,6 +14,8 @@ import { AIExecutionRepository } from "../../repositories/ai-execution.repositor
 import { CitationRepository } from "../../repositories/citation.repository";
 import { StreamEvent } from "../stream/stream-handler";
 import { StructuredLogger } from "./StructuredLogger";
+import { PromptCache } from "../cache/prompt-cache";
+import { env } from "../../../lib/env";
 
 export class AIOrchestrator {
   private contextBuilder = new ContextBuilder();
@@ -48,12 +50,12 @@ export class AIOrchestrator {
   ) {
     const startTime = Date.now();
 
-    // 1. Validate Rate Limits
-    await RateLimiter.checkRateLimit(context.userId);
+    // 1. Validate Rate Limits & Billing Quotas
+    await RateLimiter.checkRateLimit(context.userId, context.orgId);
 
     // 2. Load Configuration
     const taskConfig = FeatureRegistry.getTaskForFeature(feature);
-    const providerName = context.providerName || "openai";
+    const providerName = context.providerName || "gemini";
     const provider = providerRegistry.getProvider(providerName);
 
     StructuredLogger.info("AI_EXECUTION_STARTED", { feature, providerName, stream });
@@ -75,11 +77,11 @@ export class AIOrchestrator {
       if (taskConfig.requiresRetrieval && retrievedChunks.length === 0) {
         const retriever = new SemanticRetriever(provider);
         if (context.paperId) {
-          retrievedChunks = await retriever.retrieveByPaper(context.query, context.paperId);
+          retrievedChunks = await retriever.retrieveByPaper(context.query, context.paperId, context.orgId);
         } else if (context.projectId) {
-          retrievedChunks = await retriever.retrieveByProject(context.query, context.projectId);
+          retrievedChunks = await retriever.retrieveByProject(context.query, context.projectId, context.orgId);
         } else {
-          retrievedChunks = await retriever.retrieveTopK(context.query, 5);
+          retrievedChunks = await retriever.retrieveTopK(context.query, 5, context.orgId);
         }
       }
 
@@ -103,7 +105,17 @@ export class AIOrchestrator {
         // Note: For streams, usage tracking and citations might need to be resolved after the stream completes.
         // We defer those to the consumer or a stream wrapper for now.
       } else {
-        const rawResponse = await RetryPolicy.executeWithRetries(() => provider.generate(messages));
+        const cachedResponse = await PromptCache.get(messages, context.orgId);
+        let rawResponse: string;
+
+        if (cachedResponse) {
+          rawResponse = cachedResponse;
+          StructuredLogger.info("AI_CACHE_HIT", { feature, providerName });
+        } else {
+          rawResponse = await RetryPolicy.executeWithRetries(() => provider.generate(messages));
+          await PromptCache.set(messages, rawResponse, context.orgId);
+          StructuredLogger.info("AI_CACHE_MISS", { feature, providerName });
+        }
         
         const format = context.preferences?.format || taskConfig.defaultFormat;
         const formattedResponse = ResponseFormatter.format(rawResponse, format);
@@ -115,12 +127,17 @@ export class AIOrchestrator {
         }
 
         // 8. Track Usage
-        // In a real scenario, we'd count tokens dynamically. For now, simulating values.
+        // Estimate tokens: roughly 4 characters per token
+        const promptString = JSON.stringify(messages);
+        const promptTokens = Math.ceil(promptString.length / 4);
+        const completionTokens = Math.ceil(rawResponse.length / 4);
+
         await UsageTracker.track({
           userId: context.userId,
+          orgId: context.orgId,
           executionId: execution.id,
-          promptTokens: 150, // mock
-          completionTokens: 50, // mock
+          promptTokens,
+          completionTokens,
           provider: providerName,
         });
 

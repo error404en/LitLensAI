@@ -72,7 +72,7 @@ export const ProjectsRepository = {
 
   async create(project: Omit<Project, "id" | "createdAt" | "updatedAt" | "userId">): Promise<Project> {
     const supabase = createClient();
-    
+
     // We get user_id from Clerk session -> Supabase RPC
     // Wait, we need the UUID of the user.
     // If the RLS policies use clerk_id via jwt claim, we might need an RPC to create project.
@@ -96,7 +96,7 @@ export const ProjectsRepository = {
       .single();
 
     if (error) throw new DatabaseError(error.message, error);
-    
+
     const newProject = mapProject(data);
 
     // Add activity
@@ -112,7 +112,7 @@ export const ProjectsRepository = {
   async update(id: string, updates: Partial<Omit<Project, "id" | "createdAt" | "updatedAt" | "userId">>): Promise<Project> {
     const supabase = createClient();
     const { data: userUUID } = await supabase.rpc('get_current_user_id');
-    
+
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.description !== undefined) updateData.description = updates.description;

@@ -1,80 +1,81 @@
-# LitLens AI
+<div align="center">
+  <img src="https://raw.githubusercontent.com/shreyas/litlens-ai/main/public/logo.png" alt="LitLens AI Logo" width="120" />
 
-**LitLens AI** is an AI-powered research assistant designed to help researchers efficiently navigate, understand, and synthesize large volumes of academic literature. By leveraging advanced Language Models and Vector Search, LitLens AI turns static PDFs into an interactive knowledge base.
+  # LitLens AI
+
+  **Enterprise-grade AI research assistant for navigating, understanding, and synthesizing academic literature via RAG.**
+
+  [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://semver.org)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Next.js](https://img.shields.io/badge/Next.js-15.1-black?logo=next.js)](https://nextjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
+  
+  <p align="center">
+    <a href="#-features">Features</a> •
+    <a href="#-architecture">Architecture</a> •
+    <a href="#-getting-started">Getting Started</a> •
+    <a href="#-documentation">Documentation</a>
+  </p>
+</div>
 
 ---
 
-## 🚀 Features
+## 📖 Introduction
 
-- **Document Processing**: Upload academic PDFs to automatically extract text, chunk content, and generate vector embeddings.
-- **AI Summarization**: Automatically generate structured summaries of uploaded papers (Abstract, Methodology, Key Findings, Limitations, etc.).
-- **Semantic Search**: Search across your entire project’s literature library using natural language, retrieving the most relevant sections of your papers.
+### The Problem
+Modern academic research is fundamentally broken by volume. Researchers, graduate students, and corporate R&D teams are forced to download hundreds of static PDFs, manually extract insights, and juggle fragmented notes across different applications. This leads to information silos, lost citations, and weeks of wasted time synthesizing literature.
+
+### The Solution
+**LitLens AI** transforms static academic PDFs into an interactive, dynamically cross-referenced knowledge base. By leveraging **Retrieval-Augmented Generation (RAG)**, LitLens AI allows researchers to upload vast libraries of literature, chat with their documents, automatically extract key findings, and instantly generate complex literature reviews with 100% accurate inline citations.
+
+It was built with a strict adherence to **Clean Architecture**, decoupled state management, and an enterprise-grade AI orchestration pipeline capable of switching between OpenAI, Claude, and Local models dynamically.
+
+### Screenshots
+*(Add your screenshots here)*
+![LitLens AI Dashboard](public/logo.png)
+
+## ✨ Features
+
+- **Automated Literature Processing**: Upload PDFs to instantly extract text, chunk content intelligently, and generate vector embeddings via Inngest background workers.
+- **AI Document Summarization**: Automatically generate structured overviews (Abstract, Methodology, Key Findings, Limitations) for any uploaded paper.
+- **Semantic Vector Search**: Search across your entire project’s literature library using natural language, retrieving the exact paragraphs and pages where your query is answered.
 - **Research Intelligence Hub**: A unified workspace combining timeline activity feeds, dynamic AI insights, project health metrics, and saved views.
-- **Cross-Paper Comparison**: Select multiple papers to automatically generate a comparative matrix highlighting differences in methodology and findings.
-- **Research Gap Analysis**: Identify unexplored areas and potential future work by aggregating limitations and future directions across multiple papers.
-- **Literature Review Generator**: Draft complex literature reviews, complete with inline citations mapping directly back to the uploaded papers.
+- **Cross-Paper Comparison Engine**: Select multiple papers and automatically generate a comparative matrix highlighting differences in methodology and empirical findings.
+- **Literature Review Generator**: Draft complex, multi-page literature reviews, complete with inline citations mapping directly back to the uploaded source PDFs.
+- **Zero-Latency UI**: Built on React 19 concurrent features with optimistic updates, pre-fetching, and decoupled Zustand state stores to eliminate prop-drilling.
 
-## 📊 Project Metrics & Status
+## 🏗️ Architecture & Tech Stack
 
-- **Development Progress**: 12 Engineering Phases Completed (MVP Fully Launched).
-  - Core Modules: Research Intelligence Hub, Comparison Engine, Gap Analysis, Literature Review Generation.
-  - Platform Foundation: Clerk Authentication, Supabase, Qdrant Vector Search, Arcjet security.
-  - AI Infrastructure: Enterprise-grade Provider-Agnostic AI Orchestrator, Multi-tier Caching, Context Building, and Token Tracking.
-- **Architecture Compliance**: 100% adherence to Clean Architecture (`UI → Hooks → Zustand → Services → Repositories → Supabase/Qdrant`).
-- **State Management**: Zero prop-drilling. Fully decoupled state using localized Zustand stores per workspace.
-- **Performance Targets**: 
-  - **Sub-100ms** UI interactions leveraging React 19 concurrent features.
-  - **Streaming RAG Responses** simulating real-time token yield with <200ms TTFB.
-  - **O(1) Data Retrieval** through optimized repositories.
-- **Code Quality**: Strict TypeScript enforcement (0 `any`, 0 `ts-ignore`), robust Zod schemas, and comprehensive custom error classes.
+LitLens AI strictly separates concerns using a `UI → Hooks → Zustand → Services → Repositories → DB` layer model.
 
-## 🛠️ Tech Stack
-
+### Tech Stack
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui
-- **State Management**: Zustand, TanStack Query
+- **State Management**: Zustand, TanStack React Query
 - **Authentication**: Clerk
 - **Security**: Arcjet (Bot protection & Rate limiting)
-- **Database & Storage**: PostgreSQL via Supabase, Supabase Storage
-- **Background Jobs**: Inngest
-- **AI & Orchestration**: LangChain, OpenAI API (GPT-4o/mini), Claude Provider Stubs, Gemini Provider Stubs.
+- **Database**: PostgreSQL (Supabase) with Row-Level Security
 - **Vector Database**: Qdrant Cloud (Cosine Similarity, Hybrid Search)
-- **Deployment**: Vercel
+- **Background Jobs**: Inngest (Event-driven background processing)
+- **AI Orchestration**: LangChain, OpenAI API (GPT-4o/mini)
 
-## 🏗️ Architecture Flow
+### AI Pipeline
+1. **Ingestion**: PDF texts are extracted via `pdf-parse` within an asynchronous Inngest worker.
+2. **Chunking**: Text is split into semantically meaningful chunks using LangChain's `RecursiveCharacterTextSplitter`.
+3. **Embedding**: Chunks are embedded using `text-embedding-3-small` and indexed in Qdrant.
+4. **Retrieval**: User queries trigger a hybrid search against the Qdrant index.
+5. **Generation**: The context is passed to the LLM (GPT-4o) alongside the `AIOrchestrator` to generate responses with direct citation mappings.
 
-1. **User Uploads PDF** via the frontend interface.
-2. **Arcjet Validation** ensures the request is secure and within rate limits.
-3. The file is stored in **Supabase Storage** and a metadata record is created in **PostgreSQL**.
-4. An **Inngest Event** (`paper/uploaded`) is triggered for background processing.
-5. **LangChain** loads and chunks the PDF text.
-6. Embeddings are generated and stored securely in **Qdrant**.
-7. An LLM generates a structured summary, saving metadata back to PostgreSQL.
-8. The **Research Intelligence Hub** updates in real-time, providing immediate access to dynamically generated AI insights and semantic retrieval tools.
-
----
-
-## 💻 Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-
-Ensure you have the following installed:
 - Node.js (>= 18.x)
-- npm or yarn or pnpm
-- Git
+- `npm` or `pnpm`
 
-You will also need accounts for:
-- [Clerk](https://clerk.com/)
-- [Supabase](https://supabase.com/)
-- [Qdrant](https://qdrant.tech/)
-- [Inngest](https://www.inngest.com/)
-- [Arcjet](https://arcjet.com/)
-- [OpenAI](https://openai.com/)
-
-### Installation
+### Local Installation
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/litlens-ai.git
+   git clone https://github.com/shreyas/litlens-ai.git
    cd litlens-ai
    ```
 
@@ -84,42 +85,67 @@ You will also need accounts for:
    ```
 
 3. **Set up environment variables:**
-   Copy the example environment file and populate it with your keys.
+   Copy the example environment file:
    ```bash
    cp .env.example .env.local
    ```
-   *Required Variables:*
-   - Clerk Keys (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`)
-   - Supabase Keys (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
-   - Inngest Key (`INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`)
-   - Qdrant Keys (`QDRANT_URL`, `QDRANT_API_KEY`)
-   - OpenAI Key (`OPENAI_API_KEY`)
-   - Arcjet Key (`ARCJET_KEY`)
+   Fill in your API keys for Clerk, Supabase, Qdrant, Inngest, and OpenAI. LitLens AI utilizes a strictly typed Zod boot sequence; missing keys will prevent the server from starting to ensure production safety.
 
 4. **Run the development server:**
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
----
+5. Open [http://localhost:3000](http://localhost:3000) and start researching!
 
 ## 📂 Documentation
 
-Detailed documentation and plans can be found in the `/docs` directory:
-- [Development Phases History](docs/PHASES_DOCUMENTATION.md)
-- [Implementation Plan](docs/IMPLEMENTATION.md)
-- [Architecture Flow](docs/APP_FLOW.md)
-- [Product Requirements (PRD)](docs/PRD.md)
-- [Technical Requirements (TRD)](docs/TRD.md)
-- [Database Schema](docs/SCHEMA.md)
-- [Codebase Analysis](docs/CODEBASE_ANALYSIS.md)
+Deep dive into the engineering decisions and architecture of LitLens AI:
+
+- [Architecture & State Management](docs/ARCHITECTURE.md)
+- [AI Pipeline & Orchestration](docs/AI_PIPELINE.md)
+- [API Reference](docs/API.md)
+- [Database & Schema](docs/SCHEMA.md)
+- [Deployment & Production Operations](docs/DEPLOYMENT.md)
+- [Troubleshooting & Limitations](docs/TROUBLESHOOTING.md)
+
+## 🛡️ Production Operations & Deployment
+
+LitLens AI is engineered for high availability and deep observability:
+
+- **Health Monitoring**: Poll `/api/health` for structured DB and AI connectivity checks.
+- **Telemetry**: `StructuredLogger` intercepts all AI events, securely redacting (`[REDACTED]`) API keys, prompts, and tokens before streaming to stdout.
+- **Rollback Safety**: Vercel Git-revert compatible. Database migrations are additive-only to prevent catastrophic data loss during rollbacks.
+
+## 📂 Folder Structure
+
+```text
+litlens-ai/
+├── app/               # Next.js 15 App Router pages and API routes
+├── components/        # React components (UI, Layout, Domain-specific)
+├── docs/              # Architectural and system documentation
+├── hooks/             # Custom React hooks (Data fetching, logic)
+├── lib/               # Utilities, Types, AI Providers, Repositories
+├── public/            # Static assets
+├── services/          # Business logic and external integrations
+├── stores/            # Zustand global state stores
+└── supabase/          # Database migrations and seed files
+```
+
+## 🚀 Future Roadmap
+
+- **v1.1**: Shared Team Workspaces & Collaborative Highlighting.
+- **v1.2**: Export literature reviews directly to Microsoft Word (`.docx`).
+- **v2.0**: Native Local LLM Support (Ollama integration) for fully offline, privacy-first research.
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/litlens-ai/issues).
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a Pull Request.
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
+
+## 📬 Contact
+
+Created by [Shreyas](https://github.com/shreyas) — feel free to reach out with questions or feedback!

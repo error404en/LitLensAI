@@ -8,7 +8,7 @@ export interface VectorPoint {
 
 export class QdrantRepository {
   private client: QdrantClient;
-  private collectionName = "litlens_papers";
+  private collectionName = "litlens_papers_gemini";
 
   constructor() {
     this.client = new QdrantClient({
@@ -20,7 +20,7 @@ export class QdrantRepository {
   /**
    * Ensure the collection exists.
    */
-  async initCollection(vectorSize: number = 1536) {
+  async initCollection(vectorSize: number = 768) {
     try {
       const exists = await this.client.collectionExists(this.collectionName);
       if (!exists.exists) {

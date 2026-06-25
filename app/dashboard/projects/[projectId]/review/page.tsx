@@ -37,7 +37,7 @@ export default function LiteratureReviewGeneratorPage() {
       const query = `Write a literature review on "${topic}". Research Question: "${researchQuestion}". Synthesize these papers: ${selectedTitles}`;
       const result = await reviewPapersAction(projectId, query);
       if (typeof result === 'object' && result !== null && 'error' in result) {
-        setReviewResult(`**Error:** ${(result as any).error}`);
+        setReviewResult(`**Error:** ${(result as { error: string }).error}`);
       } else {
         setReviewResult(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
       }

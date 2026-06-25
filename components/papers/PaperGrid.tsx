@@ -9,9 +9,10 @@ interface PaperGridProps {
   onOpen?: (id: string) => void
   onRename?: (id: string) => void
   onCompare?: (id: string) => void
+  onAddToProject?: (id: string) => void
 }
 
-export function PaperGrid({ papers, onDelete, onFavorite, onOpen, onRename, onCompare }: PaperGridProps) {
+export function PaperGrid({ papers, onDelete, onFavorite, onOpen, onRename, onCompare, onAddToProject }: PaperGridProps) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {papers.map((paper) => (
@@ -23,6 +24,7 @@ export function PaperGrid({ papers, onDelete, onFavorite, onOpen, onRename, onCo
           onFavorite={onFavorite}
           onRename={onRename}
           onCompare={onCompare}
+          onAddToProject={onAddToProject}
         />
       ))}
     </div>

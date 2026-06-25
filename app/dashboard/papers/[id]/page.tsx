@@ -43,13 +43,13 @@ export default function PDFWorkspacePage({ params }: { params: Promise<{ id: str
 
   const { setLeftSidebarTab, setRightSidebarTab } = usePDF(id);
 
-  // Handle mock text selection for demonstration
+  // Handle real text selection and bounding rect mapping
   React.useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
       const selection = window.getSelection();
       const text = selection?.toString().trim();
       
-      if (text && text.length > 0) {
+      if (text && text.length > 0 && selection && selection.rangeCount > 0) {
         // Find nearest PDF page
         const pageEl = (e.target as HTMLElement).closest('[id^="pdf-page-"]');
         let pageNum = 1;
@@ -58,10 +58,17 @@ export default function PDFWorkspacePage({ params }: { params: Promise<{ id: str
           pageNum = parseInt(idParts[idParts.length - 1], 10) || 1;
         }
 
+        // Get actual bounding rect for the selection
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
         setSelectedText({
           text,
           page: pageNum,
-          position: { x: e.clientX, y: e.clientY - 40 }
+          position: { 
+            x: rect.left + window.scrollX + (rect.width / 2), 
+            y: rect.top + window.scrollY - 40 
+          }
         });
       } else if (!((e.target as HTMLElement).closest('.fixed.z-50'))) {
         setSelectedText(null);

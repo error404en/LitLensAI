@@ -7,22 +7,27 @@ import { Project } from "../../lib/types"
 import { formatDate } from "../../lib/utils"
 
 export function ProjectNotesEditor({ project }: { project: Project }) {
-  const [content, setContent] = React.useState("")
+  const [content, setContent] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`project_notes_${project.id}`)
+      if (saved) return saved
+    }
+    return `# ${project.title} Notes\n\nBegin typing here...`
+  })
   const [isSaving, setIsSaving] = React.useState(false)
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null)
-  const [prevTitle, setPrevTitle] = React.useState(project.title)
+  const [prevProjectId, setPrevProjectId] = React.useState(project.id)
   const isMounted = React.useRef(false)
 
-  // Load from local storage
+  if (project.id !== prevProjectId) {
+    setPrevProjectId(project.id)
+    const saved = typeof window !== "undefined" ? localStorage.getItem(`project_notes_${project.id}`) : null
+    setContent(saved || `# ${project.title} Notes\n\nBegin typing here...`)
+  }
+
   React.useEffect(() => {
-    const saved = localStorage.getItem(`project_notes_${project.id}`)
-    if (saved) {
-      setContent(saved)
-    } else {
-      setContent(`# ${project.title} Notes\n\nBegin typing here...`)
-    }
     isMounted.current = true
-  }, [project.id, project.title])
+  }, [])
 
   // Autosave
   React.useEffect(() => {

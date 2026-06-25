@@ -72,18 +72,28 @@ export function useUpload() {
 
         // Start upload
         try {
-          await UploadService.uploadFile(
+          const completedUpload = await UploadService.uploadFile(
             file,
             undefined,
             (pct) => store.updateUpload(uploadId, { progress: pct }),
             (status) => store.updateUpload(uploadId, { status }),
             uploadId
           );
-          store.updateUpload(uploadId, {
-            status: "completed",
-            progress: 100,
-            completedAt: new Date().toISOString(),
-          });
+          if (completedUpload.status === "completed") {
+            store.updateUpload(uploadId, {
+              status: "completed",
+              progress: 100,
+              paperId: completedUpload.paperId,
+              completedAt: new Date().toISOString(),
+            });
+          } else {
+            store.updateUpload(uploadId, {
+              status: completedUpload.status,
+              isDuplicate: completedUpload.isDuplicate,
+              duplicatePaperId: completedUpload.duplicatePaperId,
+              progress: completedUpload.progress || 0,
+            });
+          }
         } catch (err) {
           store.updateUpload(uploadId, {
             status: "failed",
@@ -103,17 +113,27 @@ export function useUpload() {
       store.updateUpload(id, { status: "queued", progress: 0, error: undefined });
 
       try {
-        await UploadService.uploadFile(
+        const completedUpload = await UploadService.uploadFile(
           upload.file,
           upload.projectId,
           (pct) => store.updateUpload(id, { progress: pct }),
           (status) => store.updateUpload(id, { status })
         );
-        store.updateUpload(id, {
-          status: "completed",
-          progress: 100,
-          completedAt: new Date().toISOString(),
-        });
+        if (completedUpload.status === "completed") {
+          store.updateUpload(id, {
+            status: "completed",
+            progress: 100,
+            paperId: completedUpload.paperId,
+            completedAt: new Date().toISOString(),
+          });
+        } else {
+          store.updateUpload(id, {
+            status: completedUpload.status,
+            isDuplicate: completedUpload.isDuplicate,
+            duplicatePaperId: completedUpload.duplicatePaperId,
+            progress: completedUpload.progress || 0,
+          });
+        }
       } catch (err) {
         store.updateUpload(id, {
           status: "failed",
@@ -152,17 +172,29 @@ export function useUpload() {
       store.updateUpload(id, { isDuplicate: false, status: "queued", progress: 0 });
 
       try {
-        await UploadService.uploadFile(
+        const completedUpload = await UploadService.uploadFile(
           upload.file,
           upload.projectId,
           (pct) => store.updateUpload(id, { progress: pct }),
-          (status) => store.updateUpload(id, { status })
+          (status) => store.updateUpload(id, { status }),
+          undefined,
+          true
         );
-        store.updateUpload(id, {
-          status: "completed",
-          progress: 100,
-          completedAt: new Date().toISOString(),
-        });
+        if (completedUpload.status === "completed") {
+          store.updateUpload(id, {
+            status: "completed",
+            progress: 100,
+            paperId: completedUpload.paperId,
+            completedAt: new Date().toISOString(),
+          });
+        } else {
+          store.updateUpload(id, {
+            status: completedUpload.status,
+            isDuplicate: completedUpload.isDuplicate,
+            duplicatePaperId: completedUpload.duplicatePaperId,
+            progress: completedUpload.progress || 0,
+          });
+        }
       } catch (err) {
         store.updateUpload(id, {
           status: "failed",

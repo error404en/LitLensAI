@@ -14,6 +14,7 @@ interface ChatState {
   isTyping: boolean;
   isLoading: boolean;
   error: string | null;
+  attemptedAutoCreations: Record<string, boolean>;
 
   // Actions: Data
   setMessages: (messages: AIChatMessage[]) => void;
@@ -30,6 +31,7 @@ interface ChatState {
   setTyping: (isTyping: boolean) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  setAttemptedAutoCreation: (paperId: string, attempted: boolean) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -43,6 +45,7 @@ export const useChatStore = create<ChatState>((set) => ({
   isTyping: false,
   isLoading: false,
   error: null,
+  attemptedAutoCreations: {},
 
   setMessages: (messages) => set({ messages }),
   addMessage: (message) => set((s) => ({ messages: [...s.messages, message] })),
@@ -63,4 +66,7 @@ export const useChatStore = create<ChatState>((set) => ({
   setTyping: (isTyping) => set({ isTyping }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+  setAttemptedAutoCreation: (paperId, attempted) => set((s) => ({
+    attemptedAutoCreations: { ...s.attemptedAutoCreations, [paperId]: attempted }
+  })),
 }));

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { useChatStore } from "../stores/chat.store";
-import { AIService } from "../services/ai.service";
+import { loadMessagesAction, saveUserMessageAction, deleteMessageAction } from "../app/actions/chat.actions";
 import { AIChatMessage } from "../lib/types/ai";
 
 export function useChat() {
@@ -10,7 +10,7 @@ export function useChat() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const messages = await AIService.loadMessages(conversationId);
+      const messages = await loadMessagesAction(conversationId);
       store.setMessages(messages);
     } catch (err) {
       store.setError(err instanceof Error ? err.message : "Failed to load messages");
@@ -50,7 +50,7 @@ export function useChat() {
 
     try {
       // Actually save user message to backend
-      const savedUserMsg = await AIService.saveUserMessage(convId, content);
+      const savedUserMsg = await saveUserMessageAction(convId, content);
       store.updateMessage(tempUserId, { id: savedUserMsg.id });
 
       store.setTyping(false);
@@ -70,15 +70,50 @@ export function useChat() {
 
       // Stream response
       let streamedContent = "";
-      const savedAssistantMsg = await AIService.streamAssistantResponse(
-        convId,
-        content,
-        store.selectedContext,
-        (chunk) => {
-          streamedContent += chunk;
-          store.updateMessage(tempAssistantId, { content: streamedContent });
+      const response = await fetch("/api/chat/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: convId,
+          prompt: content,
+          context: store.selectedContext,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text() || "Failed to stream response");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader available");
+
+      const decoder = new TextDecoder();
+      let done = false;
+      let savedAssistantMsg = null;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const text = decoder.decode(value);
+          const lines = text.split("\n");
+          for (const line of lines) {
+            if (line.startsWith("chunk:")) {
+              const delta = line.substring(6);
+              streamedContent += delta;
+              store.updateMessage(tempAssistantId, { content: streamedContent });
+            } else if (line.startsWith("done:")) {
+              savedAssistantMsg = JSON.parse(line.substring(5));
+            } else if (line.startsWith("error:")) {
+              throw new Error(line.substring(6));
+            }
+          }
         }
-      );
+      }
+
+      if (!savedAssistantMsg) {
+        throw new Error("Streaming completed but no assistant message was saved.");
+      }
 
       // Finalize message
       store.updateMessage(tempAssistantId, {
@@ -106,7 +141,7 @@ export function useChat() {
 
   const deleteMessage = useCallback(async (id: string) => {
     try {
-      await AIService.deleteMessage(id);
+      await deleteMessageAction(id);
       store.removeMessage(id);
     } catch (err) {
       console.error("Failed to delete message:", err);

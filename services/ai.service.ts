@@ -1,6 +1,7 @@
 import { AIRepository } from "../lib/repositories/ai.repository";
 import { AIChatMessage, AIConversation, AIContext, AISuggestedQuestion } from "../lib/types/ai";
 import { CreateConversationSchema, UpdateConversationSchema, SendMessageSchema } from "../lib/validations/ai";
+import { orchestrator } from "../lib/ai/orchestrator/AIOrchestrator";
 
 export const AIService = {
   // Conversation Management
@@ -42,40 +43,33 @@ export const AIService = {
     });
   },
 
-  // Simulated Streaming Response
-  // In a real implementation, this would use the Fetch API with a ReadableStream
-  // connecting to OpenAI/LangChain via an API route.
   async streamAssistantResponse(
     conversationId: string,
     prompt: string,
     context: AIContext | null,
     onChunk: (text: string) => void
   ): Promise<AIChatMessage> {
-    const responseText = `Here is an analysis based on your request: "${prompt}".\n\nI have reviewed the paper's context. ${context?.selectedText ? `You highlighted: > ${context.selectedText}\n\n` : ''}The methodology utilizes a novel transformer-based architecture which significantly reduces training time while maintaining high accuracy.\n\n### Key Points:\n- **Efficiency:** 40% reduction in compute overhead.\n- **Scalability:** Capable of handling sequences up to 32k tokens.\n\nThis approach directly addresses the limitations mentioned in previous works.`;
-    
-    // Simulate thinking delay
-    await new Promise((r) => setTimeout(r, 800));
+    const stream = await orchestrator.executeStream("AI Chat", {
+      userId: "user", // The real user ID should ideally be fetched from the session in the orchestrator or passed here, but we pass "user" temporarily if it isn't available. Wait, AIOrchestrator expects context.userId.
+      projectId: context?.projectId || undefined,
+      paperId: context?.paperId || undefined,
+      query: prompt,
+      selection: context?.selectedText ? { text: context.selectedText, pageNumber: context.selectedPage || 1 } : undefined,
+    });
 
-    // Simulate streaming chunks
-    const chunks = responseText.split(" ");
-    for (const chunk of chunks) {
-      onChunk(chunk + " ");
-      await new Promise((r) => setTimeout(r, 30 + Math.random() * 50));
+    let responseText = "";
+    for await (const chunk of stream) {
+      if (chunk.type === "delta" && chunk.content) {
+        responseText += chunk.content;
+        onChunk(chunk.content);
+      }
     }
 
-    // Save the final message to the repository
     return AIRepository.saveMessage({
       conversationId,
       role: "assistant",
       content: responseText,
-      citations: [
-        {
-          id: "cit_1",
-          paperId: context?.paperId || "paper_1",
-          paperTitle: "Simulated Paper Title",
-          page: context?.selectedPage || 1,
-        }
-      ]
+      citations: [], // Citations would ideally be collected from stream chunks if supported
     });
   },
 

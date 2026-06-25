@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useChatStore } from "../stores/chat.store";
-import { AIService } from "../services/ai.service";
+import { loadConversationsAction, createConversationAction, updateConversationAction, deleteConversationAction } from "../app/actions/chat.actions";
 import { AIConversation } from "../lib/types/ai";
 
 export function useConversation(paperId: string) {
@@ -11,7 +11,7 @@ export function useConversation(paperId: string) {
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["conversations", paperId],
     queryFn: async () => {
-      const convs = await AIService.loadConversations(paperId);
+      const convs = await loadConversationsAction(paperId);
       
       // Auto-select first conversation if none selected
       if (convs.length > 0 && !store.selectedConversationId) {
@@ -26,18 +26,25 @@ export function useConversation(paperId: string) {
 
   // Handle auto-creation of empty conversation if none exist
   useEffect(() => {
-    if (conversations.length === 0 && !isLoading && paperId) {
-      AIService.createConversation(paperId, undefined, "New Conversation")
+    if (!paperId) return;
+    const attemptedAutoCreations = store.attemptedAutoCreations || {};
+    const hasAttempted = attemptedAutoCreations[paperId];
+
+    if (conversations.length === 0 && !isLoading && !hasAttempted) {
+      store.setAttemptedAutoCreation(paperId, true);
+      createConversationAction(paperId, undefined, "New Conversation")
         .then((newConv) => {
           queryClient.setQueryData(["conversations", paperId], [newConv]);
           store.setSelectedConversationId(newConv.id);
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+          console.error("Auto-creation of conversation failed:", err);
+        });
     }
   }, [conversations.length, isLoading, paperId, queryClient, store]);
 
   const createMutation = useMutation({
-    mutationFn: (title?: string) => AIService.createConversation(paperId, undefined, title),
+    mutationFn: (title?: string) => createConversationAction(paperId, undefined, title),
     onSuccess: (newConv) => {
       queryClient.setQueryData(["conversations", paperId], (old: AIConversation[] = []) => [newConv, ...old]);
       store.setSelectedConversationId(newConv.id);
@@ -45,7 +52,7 @@ export function useConversation(paperId: string) {
   });
 
   const renameMutation = useMutation({
-    mutationFn: ({ id, title }: { id: string, title: string }) => AIService.updateConversation(id, { title }),
+    mutationFn: ({ id, title }: { id: string, title: string }) => updateConversationAction(id, { title }),
     onSuccess: (updated) => {
       queryClient.setQueryData(["conversations", paperId], (old: AIConversation[] = []) => 
         old.map(c => c.id === updated.id ? updated : c)
@@ -54,7 +61,7 @@ export function useConversation(paperId: string) {
   });
 
   const togglePinMutation = useMutation({
-    mutationFn: ({ id, isPinned }: { id: string, isPinned: boolean }) => AIService.updateConversation(id, { isPinned: !isPinned }),
+    mutationFn: ({ id, isPinned }: { id: string, isPinned: boolean }) => updateConversationAction(id, { isPinned: !isPinned }),
     onSuccess: (updated) => {
       queryClient.setQueryData(["conversations", paperId], (old: AIConversation[] = []) => 
         old.map(c => c.id === updated.id ? updated : c)
@@ -63,7 +70,7 @@ export function useConversation(paperId: string) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => AIService.deleteConversation(id),
+    mutationFn: (id: string) => deleteConversationAction(id),
     onSuccess: (_, id) => {
       queryClient.setQueryData(["conversations", paperId], (old: AIConversation[] = []) => 
         old.filter(c => c.id !== id)
