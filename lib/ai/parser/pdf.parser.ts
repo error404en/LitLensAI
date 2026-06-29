@@ -25,25 +25,20 @@ export interface PDFExtractionResult {
   };
 }
 
-type PdfParseFn = (dataBuffer: Buffer) => Promise<{
-  numpages: number;
-  numrender: number;
-  info: PDFMetadata;
-  metadata: unknown;
-  text: string;
-  version: string;
-}>;
-
 export class PDFParserService {
   /**
    * Extracts text and heuristic metadata from a PDF buffer
    */
   async extract(buffer: Buffer): Promise<PDFExtractionResult> {
-    const pdfParseLib = await import("pdf-parse");
-    const pdfParse = ((pdfParseLib as unknown as { default?: PdfParseFn }).default || pdfParseLib) as PdfParseFn;
-    const data = await pdfParse(buffer);
+    const { createRequire } = await import("module");
+    const requireFn = createRequire(import.meta.url);
+    const pdfParseLib = requireFn("pdf-parse");
+    const parser = new pdfParseLib.PDFParse({ data: buffer });
+    
+    const textResult = await parser.getText();
+    const infoResult = await parser.getInfo();
 
-    const fullText = data.text;
+    const fullText: string = textResult.text || "";
     const words = fullText.split(/\s+/).filter(w => w.length > 0);
     const wordCount = words.length;
     const readingTimeMinutes = Math.ceil(wordCount / 200); // Average 200 WPM
@@ -62,11 +57,13 @@ export class PDFParserService {
       .slice(0, 10)
       .map(entry => entry[0]);
 
+    const metadataInfo = (infoResult.info || {}) as PDFMetadata;
+
     return {
-      title: data.info?.title || "Untitled Document",
-      metadata: data.info || {},
-      authors: data.info?.author ? data.info.author.split(",").map((a: string) => a.trim()) : [],
-      pages: data.numpages,
+      title: metadataInfo.Title || metadataInfo.title || "Untitled Document",
+      metadata: metadataInfo,
+      authors: metadataInfo.Author ? metadataInfo.Author.split(",").map((a: string) => a.trim()) : (metadataInfo.author ? metadataInfo.author.split(",").map((a: string) => a.trim()) : []),
+      pages: infoResult.total,
       fullText,
       enriched: {
         readingTimeMinutes,

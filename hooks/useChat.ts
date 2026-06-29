@@ -4,37 +4,45 @@ import { loadMessagesAction, saveUserMessageAction, deleteMessageAction } from "
 import { AIChatMessage } from "../lib/types/ai";
 
 export function useChat() {
-  const store = useChatStore();
+  const messages = useChatStore((s) => s.messages);
+  const isStreaming = useChatStore((s) => s.isStreaming);
+  const isTyping = useChatStore((s) => s.isTyping);
+  const isLoading = useChatStore((s) => s.isLoading);
+  const error = useChatStore((s) => s.error);
+  const selectedConversationId = useChatStore((s) => s.selectedConversationId);
 
   const loadMessages = useCallback(async (conversationId: string) => {
-    store.setLoading(true);
-    store.setError(null);
+    const { setLoading, setError, setMessages } = useChatStore.getState();
+    setLoading(true);
+    setError(null);
     try {
       const messages = await loadMessagesAction(conversationId);
-      store.setMessages(messages);
+      setMessages(messages);
     } catch (err) {
-      store.setError(err instanceof Error ? err.message : "Failed to load messages");
+      setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {
-      store.setLoading(false);
+      setLoading(false);
     }
-  }, [store]);
+  }, []);
 
-  const setMessages = store.setMessages;
   // Load messages when conversation changes
   useEffect(() => {
-    if (store.selectedConversationId) {
-      loadMessages(store.selectedConversationId);
+    if (selectedConversationId) {
+      loadMessages(selectedConversationId);
     } else {
-      setMessages([]);
+      useChatStore.getState().setMessages([]);
     }
-  }, [store.selectedConversationId, loadMessages, setMessages]);
+  }, [selectedConversationId, loadMessages]);
 
   const sendMessage = useCallback(async (content: string) => {
-    const convId = store.selectedConversationId;
-    if (!convId || !content.trim() || store.isStreaming) return;
+    const convId = useChatStore.getState().selectedConversationId;
+    const isStreamingCurrent = useChatStore.getState().isStreaming;
+    if (!convId || !content.trim() || isStreamingCurrent) return;
 
-    store.setError(null);
-    store.addPromptToHistory(content);
+    const { setError, addPromptToHistory, addMessage, setTyping, updateMessage, setStreaming } = useChatStore.getState();
+
+    setError(null);
+    addPromptToHistory(content);
 
     // Save user message immediately (optimistic UI)
     const tempUserId = `temp_u_${Date.now()}`;
@@ -45,16 +53,16 @@ export function useChat() {
       content,
       createdAt: new Date().toISOString(),
     };
-    store.addMessage(userMessage);
-    store.setTyping(true);
+    addMessage(userMessage);
+    setTyping(true);
 
     try {
       // Actually save user message to backend
       const savedUserMsg = await saveUserMessageAction(convId, content);
-      store.updateMessage(tempUserId, { id: savedUserMsg.id });
+      updateMessage(tempUserId, { id: savedUserMsg.id });
 
-      store.setTyping(false);
-      store.setStreaming(true);
+      setTyping(false);
+      setStreaming(true);
 
       // Create a temporary assistant message for streaming
       const tempAssistantId = `temp_a_${Date.now()}`;
@@ -66,17 +74,18 @@ export function useChat() {
         isStreaming: true,
         createdAt: new Date().toISOString(),
       };
-      store.addMessage(tempAssistantMsg);
+      addMessage(tempAssistantMsg);
 
       // Stream response
       let streamedContent = "";
+      const currentContext = useChatStore.getState().selectedContext;
       const response = await fetch("/api/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversationId: convId,
           prompt: content,
-          context: store.selectedContext,
+          context: currentContext,
         }),
       });
 
@@ -101,7 +110,7 @@ export function useChat() {
             if (line.startsWith("chunk:")) {
               const delta = line.substring(6);
               streamedContent += delta;
-              store.updateMessage(tempAssistantId, { content: streamedContent });
+              updateMessage(tempAssistantId, { content: streamedContent });
             } else if (line.startsWith("done:")) {
               savedAssistantMsg = JSON.parse(line.substring(5));
             } else if (line.startsWith("error:")) {
@@ -116,7 +125,7 @@ export function useChat() {
       }
 
       // Finalize message
-      store.updateMessage(tempAssistantId, {
+      updateMessage(tempAssistantId, {
         id: savedAssistantMsg.id,
         content: savedAssistantMsg.content,
         citations: savedAssistantMsg.citations,
@@ -125,8 +134,8 @@ export function useChat() {
 
     } catch (err) {
       console.error(err);
-      store.setError(err instanceof Error ? err.message : "Failed to send message");
-      store.addMessage({
+      setError(err instanceof Error ? err.message : "Failed to send message");
+      addMessage({
         id: `err_${Date.now()}`,
         conversationId: convId,
         role: "error",
@@ -134,34 +143,36 @@ export function useChat() {
         createdAt: new Date().toISOString(),
       });
     } finally {
-      store.setTyping(false);
-      store.setStreaming(false);
+      setTyping(false);
+      setStreaming(false);
     }
-  }, [store]);
+  }, []);
 
   const deleteMessage = useCallback(async (id: string) => {
     try {
       await deleteMessageAction(id);
-      store.removeMessage(id);
+      useChatStore.getState().removeMessage(id);
     } catch (err) {
       console.error("Failed to delete message:", err);
     }
-  }, [store]);
+  }, []);
 
   const regenerate = useCallback(async () => {
+    const currentMessages = useChatStore.getState().messages;
+    const isStreamingCurrent = useChatStore.getState().isStreaming;
     // Find last user message
-    const lastUserMessage = [...store.messages].reverse().find(m => m.role === "user");
-    if (lastUserMessage && !store.isStreaming) {
+    const lastUserMessage = [...currentMessages].reverse().find(m => m.role === "user");
+    if (lastUserMessage && !isStreamingCurrent) {
       await sendMessage(lastUserMessage.content);
     }
-  }, [store.messages, store.isStreaming, sendMessage]);
+  }, [sendMessage]);
 
   return {
-    messages: store.messages,
-    isStreaming: store.isStreaming,
-    isTyping: store.isTyping,
-    isLoading: store.isLoading,
-    error: store.error,
+    messages,
+    isStreaming,
+    isTyping,
+    isLoading,
+    error,
     sendMessage,
     deleteMessage,
     regenerate,

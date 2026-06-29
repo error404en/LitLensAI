@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/shreyas/litlens-ai/main/public/logo.png" alt="LitLens AI Logo" width="120" />
+  <img src="https://raw.githubusercontent.com/error404en/LitLensAI/main/public/logo.png" alt="LitLens AI Logo" width="120" />
 
   # LitLens AI
 
@@ -75,7 +75,7 @@ LitLens AI strictly separates concerns using a `UI → Hooks → Zustand → Ser
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/shreyas/litlens-ai.git
+   git clone https://github.com/error404en/LitLensAI.git
    cd litlens-ai
    ```
 
@@ -148,4 +148,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📬 Contact
 
-Created by [Shreyas](https://github.com/shreyas) — feel free to reach out with questions or feedback!
+Created by [error404en](https://github.com/error404en) — feel free to reach out with questions or feedback!

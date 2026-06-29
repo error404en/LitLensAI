@@ -2,11 +2,11 @@
   "name": "litlens-ai",
   "version": "1.0.0",
   "description": "Enterprise-grade AI research assistant for navigating, understanding, and synthesizing academic literature via RAG.",
-  "author": "Shreyas",
+  "author": "error404en",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shreyas/litlens-ai.git"
+    "url": "https://github.com/error404en/LitLensAI.git"
   },
   "keywords": [
     "ai",

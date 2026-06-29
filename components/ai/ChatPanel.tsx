@@ -30,7 +30,8 @@ export function ChatPanel({ paperId, onClose }: ChatPanelProps) {
   
   const { messages, isStreaming, isTyping, isLoading, error, sendMessage, regenerate } = useChat();
   const { conversations, selectedConversationId, createConversation } = useConversation(paperId);
-  const { selectedText, currentPage } = usePDFStore();
+  const selectedText = usePDFStore((s) => s.selectedText);
+  const currentPage = usePDFStore((s) => s.currentPage);
 
   const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
   const title = selectedConversation?.title || "New Conversation";

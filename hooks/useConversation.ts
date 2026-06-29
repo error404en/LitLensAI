@@ -5,49 +5,49 @@ import { loadConversationsAction, createConversationAction, updateConversationAc
 import { AIConversation } from "../lib/types/ai";
 
 export function useConversation(paperId: string) {
-  const store = useChatStore();
+  const selectedConversationId = useChatStore((s) => s.selectedConversationId);
+  const attemptedAutoCreations = useChatStore((s) => s.attemptedAutoCreations);
   const queryClient = useQueryClient();
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["conversations", paperId],
     queryFn: async () => {
       const convs = await loadConversationsAction(paperId);
-      
-      // Auto-select first conversation if none selected
-      if (convs.length > 0 && !store.selectedConversationId) {
-        store.setSelectedConversationId(convs[0].id);
-      } else if (convs.length === 0) {
-        // We shouldn't create within a queryFn, but we can return empty and handle it below
-      }
       return convs;
     },
     enabled: !!paperId,
   });
 
+  // Handle auto-selecting the first conversation if none is selected
+  useEffect(() => {
+    if (conversations.length > 0 && !selectedConversationId) {
+      useChatStore.getState().setSelectedConversationId(conversations[0].id);
+    }
+  }, [conversations, selectedConversationId]);
+
   // Handle auto-creation of empty conversation if none exist
   useEffect(() => {
     if (!paperId) return;
-    const attemptedAutoCreations = store.attemptedAutoCreations || {};
     const hasAttempted = attemptedAutoCreations[paperId];
 
     if (conversations.length === 0 && !isLoading && !hasAttempted) {
-      store.setAttemptedAutoCreation(paperId, true);
+      useChatStore.getState().setAttemptedAutoCreation(paperId, true);
       createConversationAction(paperId, undefined, "New Conversation")
         .then((newConv) => {
           queryClient.setQueryData(["conversations", paperId], [newConv]);
-          store.setSelectedConversationId(newConv.id);
+          useChatStore.getState().setSelectedConversationId(newConv.id);
         })
         .catch(err => {
           console.error("Auto-creation of conversation failed:", err);
         });
     }
-  }, [conversations.length, isLoading, paperId, queryClient, store]);
+  }, [conversations.length, isLoading, paperId, queryClient, attemptedAutoCreations]);
 
   const createMutation = useMutation({
     mutationFn: (title?: string) => createConversationAction(paperId, undefined, title),
     onSuccess: (newConv) => {
       queryClient.setQueryData(["conversations", paperId], (old: AIConversation[] = []) => [newConv, ...old]);
-      store.setSelectedConversationId(newConv.id);
+      useChatStore.getState().setSelectedConversationId(newConv.id);
     }
   });
 
@@ -76,10 +76,10 @@ export function useConversation(paperId: string) {
         old.filter(c => c.id !== id)
       );
       
-      if (store.selectedConversationId === id) {
+      if (selectedConversationId === id) {
         const remaining = queryClient.getQueryData<AIConversation[]>(["conversations", paperId]) || [];
         if (remaining.length > 0) {
-          store.setSelectedConversationId(remaining[0].id);
+          useChatStore.getState().setSelectedConversationId(remaining[0].id);
         } else {
           createMutation.mutate("New Conversation");
         }
@@ -89,8 +89,8 @@ export function useConversation(paperId: string) {
 
   return {
     conversations,
-    selectedConversationId: store.selectedConversationId,
-    selectConversation: store.setSelectedConversationId,
+    selectedConversationId,
+    selectConversation: useChatStore.getState().setSelectedConversationId,
     createConversation: async (title?: string) => createMutation.mutateAsync(title),
     renameConversation: async (id: string, title: string) => renameMutation.mutateAsync({ id, title }),
     togglePin: async (id: string, isPinned: boolean) => togglePinMutation.mutateAsync({ id, isPinned }),

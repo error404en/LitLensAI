@@ -34,14 +34,20 @@ export default function PDFWorkspacePage({ params }: { params: Promise<{ id: str
     isRightSidebarOpen,
     selectedText,
     setSelectedText,
+    setLeftSidebarTab,
+    setRightSidebarTab,
+    reset,
   } = usePDF(id);
+
+  // Clean up store on workspace page unmount
+  React.useEffect(() => {
+    return () => reset();
+  }, [reset]);
 
   const { highlights, addHighlight, removeHighlight, addAnnotation } = usePDFAnnotations();
   const { papers, isLoading: isPapersLoading } = usePapers();
   
   const paper = React.useMemo(() => papers.find(p => p.id === id), [papers, id]);
-
-  const { setLeftSidebarTab, setRightSidebarTab } = usePDF(id);
 
   // Handle real text selection and bounding rect mapping
   React.useEffect(() => {

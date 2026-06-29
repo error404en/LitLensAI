@@ -53,3 +53,23 @@ This document previously tracked features that were mocked or explicitly not imp
 ### 10. Comparison Matrix Limit (Resolved)
 - **Status**: Removed alert.
 - **Details**: Gracefully handles any number of selected papers dynamically.
+
+### 11. AI Chat Infinite creation loop (Resolved)
+- **Status**: Wired to global Zustand store.
+- **Location**: `hooks/useConversation.ts`
+- **Details**: Tracks auto-creation attempts globally across mounts/components to prevent duplicate creation requests and tab unresponsiveness.
+
+### 12. General PDF Upload / Database project_id Constraint (Resolved)
+- **Status**: Dynamic fallback project mapping.
+- **Location**: `lib/repositories/papers.repository.ts`
+- **Details**: Dynamically maps papers uploaded without a specific project context to the user's first existing project or a new "Default Project", preventing RLS/NOT NULL database violations.
+
+### 13. Duplicate Dialog Replacement Loop (Resolved)
+- **Status**: Added `skipDuplicateCheck` bypass flag.
+- **Location**: `services/upload.service.ts`, `hooks/useUpload.ts`
+- **Details**: Allows users to bypass file hash duplicate checks when choosing to replace an existing paper.
+
+### 14. Inactive Navigation/Search Elements (Resolved)
+- **Status**: Click and enter-based navigation.
+- **Location**: `components/layout/TopNavBar.tsx`, `components/papers/PaperActions.tsx`
+- **Details**: Fully wired the "Upload PDF" button in papers library and enabled clearing searches or submitting clickable searches in the TopNavBar.

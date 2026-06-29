@@ -32,7 +32,7 @@
 
 ## 🛠️ Resolved Issues (Phase 18)
 
-During Phase 18 Enterprise Polish, all major placeholders and mocked logic were resolved:
+During Phase 18 Enterprise Polish and subsequent bug-fixing rounds, all major placeholders, mocked logic, and blocking pipeline issues were resolved:
 - Alternative AI providers (`claude`, `gemini`, `local`) now use graceful fallback modes instead of throwing 500 errors.
 - Project Health metrics and Insights now dynamically aggregate from the `AnnotationRepository` and `InsightsRepository`.
 - The interactive AI Chat tab within projects has been fully wired to the orchestrator via `ChatPanel` and `useChat`.
@@ -40,3 +40,7 @@ During Phase 18 Enterprise Polish, all major placeholders and mocked logic were 
 - PDF Text Selection logic accurately maps bounding rects to real coordinates for highlights.
 - AI token telemetry now performs dynamic character-based length estimations instead of using static mocks.
 - `alert()` popups in navigation and paper comparison views have been replaced with proper UI states.
+- Resolved an infinite render loop in `useConversation` by storing auto-creation flags globally in the Zustand store to prevent concurrent component mounts from launching redundant Server Actions.
+- Resolved a PDF Upload failure on general pages by implementing a fallback that maps papers to the user's first existing project or a new "Default Project" if no project context is specified, avoiding `NOT NULL` database constraints.
+- Resolved a duplicate check loop in `resolveDuplicate` by introducing a `skipDuplicateCheck` parameter that allows duplicate replacement.
+- Fixed non-responsive topbar searches and the static "Upload PDF" button in papers library.

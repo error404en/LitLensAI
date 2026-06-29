@@ -201,7 +201,7 @@ export default function HelpPage() {
             <h4 className="font-semibold text-sm pb-2 border-b border-outline-variant/40">Quick Support Resources</h4>
             <div className="space-y-3">
               <a 
-                href="https://github.com/shreyas/litlens-ai" 
+                href="https://github.com/error404en/LitLensAI" 
                 target="_blank" 
                 rel="noreferrer"
                 className="flex items-center gap-3 p-2.5 rounded-lg border border-outline-variant/30 hover:bg-surface/50 transition-all text-xs font-medium cursor-pointer"
