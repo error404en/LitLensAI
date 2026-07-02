@@ -70,12 +70,12 @@ export class GeminiProvider implements AIProvider {
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "models/text-embedding-004",
+          model: "models/gemini-embedding-001",
           content: {
             parts: [{ text }],
           },
@@ -99,14 +99,14 @@ export class GeminiProvider implements AIProvider {
     }
 
     const requests = texts.map(text => ({
-      model: "models/text-embedding-004",
+      model: "models/gemini-embedding-001",
       content: {
         parts: [{ text }],
       },
     }));
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

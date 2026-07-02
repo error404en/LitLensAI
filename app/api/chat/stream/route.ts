@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         try {
           const savedMessage = await AIService.streamAssistantResponse(
+            userId,
             conversationId,
             prompt,
             context || null,

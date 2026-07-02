@@ -50,6 +50,27 @@ export class AIOrchestrator {
   ) {
     const startTime = Date.now();
 
+    // Resolve Clerk ID to database user UUID if needed
+    if (context.userId && !context.userId.includes("-")) {
+      const { adminClient } = await import("../../supabase/admin");
+      // Upsert user to ensure it exists
+      await adminClient
+        .from("users")
+        .upsert(
+          { clerk_id: context.userId, email: "user@example.com" },
+          { onConflict: "clerk_id" }
+        );
+      
+      const { data: userRow } = await adminClient
+        .from("users")
+        .select("id")
+        .eq("clerk_id", context.userId)
+        .single();
+      if (userRow) {
+        context.userId = userRow.id;
+      }
+    }
+
     // 1. Validate Rate Limits & Billing Quotas
     await RateLimiter.checkRateLimit(context.userId, context.orgId);
 

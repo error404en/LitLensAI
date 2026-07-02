@@ -44,13 +44,14 @@ export const AIService = {
   },
 
   async streamAssistantResponse(
+    userId: string,
     conversationId: string,
     prompt: string,
     context: AIContext | null,
     onChunk: (text: string) => void
   ): Promise<AIChatMessage> {
     const stream = await orchestrator.executeStream("AI Chat", {
-      userId: "user", // The real user ID should ideally be fetched from the session in the orchestrator or passed here, but we pass "user" temporarily if it isn't available. Wait, AIOrchestrator expects context.userId.
+      userId,
       projectId: context?.projectId || undefined,
       paperId: context?.paperId || undefined,
       query: prompt,
